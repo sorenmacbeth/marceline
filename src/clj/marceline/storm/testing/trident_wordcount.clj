@@ -44,16 +44,18 @@
                         (t/each ["sentence"]
                                  split-args
                                  ["word"])
+                        (t/project ["word"])
                         (t/group-by ["word"])
                         (t/persistent-aggregate word-state-factory
                                                  ["word"]
-                                                 (Count.)
+                                                 count-words
                                                  ["count"])
                         (t/parallelism-hint 16))
         count-query (-> (t/drpc-stream trident-topology "words" drpc)
                         (t/each ["args"]
                                  split-args
                                  ["word"])
+                        (t/project ["word"])
                         (t/group-by ["word"])
                         (t/state-query word-counts
                                         ["word"]
@@ -61,8 +63,9 @@
                                         ["count"])
                         (t/each ["count"] (FilterNull.))
                         (t/aggregate ["count"]
-                                      (Sum.)
-                                      ["sum"]))]
+                                      sum
+                                      ["sum"])
+                        (t/debug))]
     trident-topology))
 
 (defn run-local! []
@@ -72,8 +75,8 @@
                      {}
                      (.build
                       (build-topology local-drpc)))
-    (Thread/sleep 1000)
-    (.execute local-drpc "words" "cat the dog jumped")
+    (Thread/sleep 10000)
+    (.execute local-drpc "words" "cat dog the man jumped")
     (.shutdown cluster)
     (System/exit 0)))
 
