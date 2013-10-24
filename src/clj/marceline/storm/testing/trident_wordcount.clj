@@ -12,15 +12,13 @@
 
 (defn mk-fixed-spout [max-batch-size]
   (FixedBatchSpout.
-   (Fields. "sentence")
+   (t/fields "sentence")
    max-batch-size
-;   (ArrayList. (into [] (doall (map t/values '("the cow jumped over the moon"
-;                                               "the man went to the store and bought some candy"
-;                                               "four score and seven years ago"
-;                                               "how many can you eat"
-;                                               "to be or not to be the person")))))
-   (Values. "the cow jumped over the moon")
-   ))
+   (into-array (map t/values '("the cow jumped over the moon"
+                               "the man went to the store and bought some candy"
+                               "four score and seven years ago"
+                               "how many can you eat"
+                               "to be or not to be the person")))))
 
 (t/defcombineraggregator
   count-words
