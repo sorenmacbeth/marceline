@@ -1,11 +1,11 @@
 (ns marceline.storm.testing.trident-wordcount
-  (:import [backtype.storm.tuple Values Fields]
-           storm.trident.TridentTopology
-           [storm.trident.operation.builtin MapGet FilterNull Sum Count]
+  (:import storm.trident.TridentTopology
+           [storm.trident.operation.builtin
+            MapGet
+            FilterNull]
            storm.trident.state.StateType
            [storm.trident.testing MemoryMapState$Factory FixedBatchSpout]
-           [backtype.storm LocalDRPC LocalCluster StormSubmitter]
-           [java.util ArrayList List])
+           [backtype.storm LocalDRPC LocalCluster StormSubmitter])
   (:require [marceline.storm.trident :as t]
             [clojure.string :as string :only [join split]])
   (:use [backtype.storm clojure config])
@@ -40,47 +40,49 @@
       (doseq [word words]
         (t/emit-fn coll word)))))
 
-(defn build-topology [drpc]
-  (let [spout (doto (mk-fixed-batch-spout 3)
-                (.setCycle true))
-        word-state-factory (MemoryMapState$Factory.)
+(defn build-topology [spout drpc]
+  (let [word-state-factory (MemoryMapState$Factory.)
         trident-topology (TridentTopology.)
         word-counts (-> (t/new-stream trident-topology "word-counts" spout)
                         (t/parallelism-hint 16)
                         (t/each ["sentence"]
-                                 split-args
-                                 ["word"])
+                                split-args
+                                ["word"])
                         (t/project ["word"])
                         (t/group-by ["word"])
                         (t/persistent-aggregate word-state-factory
-                                                 ["word"]
-                                                 count-words
-                                                 ["count"])
+                                                ["word"]
+                                                count-words
+                                                ["count"])
                         (t/parallelism-hint 16))
         count-query (-> (t/drpc-stream trident-topology "words" drpc)
                         (t/each ["args"]
-                                 split-args
-                                 ["word"])
+                                split-args
+                                ["word"])
                         (t/project ["word"])
                         (t/group-by ["word"])
                         (t/state-query word-counts
-                                        ["word"]
-                                        (MapGet.)
-                                        ["count"])
+                                       ["word"]
+                                       (MapGet.)
+                                       ["count"])
                         (t/each ["count"] (FilterNull.))
                         (t/aggregate ["count"]
-                                      sum
-                                      ["sum"])
+                                     sum
+                                     ["sum"])
                         (t/debug))]
     trident-topology))
 
 (defn run-local! []
   (let [cluster (LocalCluster.)
-        local-drpc (LocalDRPC.)]
+        local-drpc (LocalDRPC.)
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
     (.submitTopology cluster "wordcounter"
                      {}
                      (.build
-                      (build-topology local-drpc)))
+                      (build-topology
+                       spout
+                       local-drpc)))
     (Thread/sleep 10000)
     (.execute local-drpc "words" "cat dog the man jumped")
     (.shutdown cluster)
@@ -91,11 +93,14 @@
         conf {TOPOLOGY-WORKERS 6
               TOPOLOGY-MAX-SPOUT-PENDING 20
               TOPOLOGY-MESSAGE-TIMEOUT-SECS 60
-              TOPOLOGY-STATS-SAMPLE-RATE 1.00}]
+              TOPOLOGY-STATS-SAMPLE-RATE 1.00}
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
     (StormSubmitter/submitTopology
      name
      conf
      (.build (build-topology
+              spout
               nil)))))
 
 (defn -main
