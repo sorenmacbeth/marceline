@@ -10,7 +10,7 @@
             [clojure.string :as string :only [join split]])
   (:use [backtype.storm clojure config]))
 
-(defn mk-fixed-spout [max-batch-size]
+(defn mk-fixed-batch-spout [max-batch-size]
   (FixedBatchSpout.
    (t/fields "sentence")
    max-batch-size
@@ -34,8 +34,8 @@
         (t/emit-fn coll word)))))
 
 (defn build-topology [drpc]
-  (let [spout (mk-fixed-spout 3)
-        _ (.setCycle spout true)
+  (let [spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))
         word-state-factory (MemoryMapState$Factory.)
         trident-topology (TridentTopology.)
         word-counts (-> (t/new-stream* trident-topology "word-counts" spout)
