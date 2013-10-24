@@ -27,6 +27,12 @@
   ([tuple] 1)
   ([t1 t2] (+ t1 t2)))
 
+(t/defcombineraggregator
+  sum
+  ([] 0)
+  ([tuple] (t/first tuple))
+  ([t1 t2] (+ t1 t2)))
+
 (t/deftridentfn split-args
   [tuple coll]
   (when-let [args (t/first tuple)]
