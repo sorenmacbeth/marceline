@@ -8,7 +8,8 @@
            [java.util ArrayList List])
   (:require [marceline.storm.trident :as t]
             [clojure.string :as string :only [join split]])
-  (:use [backtype.storm clojure config]))
+  (:use [backtype.storm clojure config])
+  (:gen-class))
 
 (defn mk-fixed-batch-spout [max-batch-size]
   (FixedBatchSpout.
@@ -38,28 +39,28 @@
                 (.setCycle true))
         word-state-factory (MemoryMapState$Factory.)
         trident-topology (TridentTopology.)
-        word-counts (-> (t/new-stream* trident-topology "word-counts" spout)
-                        (t/parallelism-hint* 16)
-                        (t/each* ["sentence"]
+        word-counts (-> (t/new-stream trident-topology "word-counts" spout)
+                        (t/parallelism-hint 16)
+                        (t/each ["sentence"]
                                  split-args
                                  ["word"])
-                        (t/group-by* ["word"])
-                        (t/persistent-aggregate* word-state-factory
+                        (t/group-by ["word"])
+                        (t/persistent-aggregate word-state-factory
                                                  ["word"]
                                                  (Count.)
                                                  ["count"])
-                        (t/parallelism-hint* 16))
-        count-query (-> (t/drpc-stream* trident-topology "words" drpc)
-                        (t/each* ["args"]
+                        (t/parallelism-hint 16))
+        count-query (-> (t/drpc-stream trident-topology "words" drpc)
+                        (t/each ["args"]
                                  split-args
                                  ["word"])
-                        (t/group-by* ["word"])
-                        (t/state-query* word-counts
+                        (t/group-by ["word"])
+                        (t/state-query word-counts
                                         ["word"]
                                         (MapGet.)
                                         ["count"])
-                        (t/each* ["count"] (FilterNull.))
-                        (t/aggregate* ["count"]
+                        (t/each ["count"] (FilterNull.))
+                        (t/aggregate ["count"]
                                       (Sum.)
                                       ["sum"]))]
     trident-topology))

@@ -15,7 +15,7 @@
             ClojureBackingMap])
   (:require [clojure.tools.logging :as log]
             [backtype.storm.clojure :refer (to-spec normalize-fns)])
-  (:refer-clojure :exclude [group-by get nth vals first count])
+  (:refer-clojure :exclude [group-by get nth vals first count partition-by shuffle])
   (:gen-class))
 
 ;; ## tridentfn
@@ -328,7 +328,7 @@
   (.emit coll (apply values vs)))
 
 ;; helpers for building up streams
-(defn each*
+(defn each
   ([stream a b]
      (if (sequential? a)
        (.each stream
@@ -343,27 +343,27 @@
             fn-inst
             (apply fields fn-fields))))
 
-(defn shuffle*
+(defn shuffle
   [stream]
   (.shuffle stream))
 
-(defn group-by*
+(defn group-by
   [stream group-fields]
   (.groupBy stream (apply fields group-fields)))
 
-(defn partition-by*
+(defn partition-by
   [stream group-fields]
   (.partitionBy stream (apply fields group-fields)))
 
-(defn batch-global*
+(defn batch-global
   [stream]
   (.batchGlobal stream))
 
-(defn partition-persist*
+(defn partition-persist
   [stream state-spec in-fields state-updater]
   (.partitionPersist stream state-spec in-fields state-updater))
 
-(defn persistent-aggregate*
+(defn persistent-aggregate
   ([stream state fn-inst fn-fields]
      (.persistentAggregate stream
                            state
@@ -376,57 +376,57 @@
                            fn-inst
                            (apply fields fn-fields))))
 
-(defn parallelism-hint*
+(defn parallelism-hint
   [stream h]
   (.parallelismHint stream h))
 
-(defn drpc-stream*
+(defn drpc-stream
   [topo name & [drpc]]
   (if drpc
     (.newDRPCStream topo name drpc)
     (.newDRPCStream topo name)))
 
-(defn new-stream*
+(defn new-stream
   [topo name spout]
   (.newStream topo name spout))
 
-(defn new-values-stream*
+(defn new-values-stream
   [state]
   (.newValuesStream state))
 
-(defn new-static-state*
+(defn new-static-state
   [topology state-factory]
   (.newStaticState topology state-factory))
 
-(defn state-query*
+(defn state-query
   [stream state in-fields query-fn fn-fields]
   (.stateQuery stream state
                (apply fields in-fields)
                query-fn
                (apply fields fn-fields)))
 
-(defn project*
+(defn project
   [stream keep-fields]
   (.project stream (apply fields keep-fields)))
 
-(defn aggregate*
+(defn aggregate
   [stream in-fields agg fn-fields]
   (.aggregate stream
               (apply fields in-fields)
               agg
               (apply fields fn-fields)))
 
-(defn name*
+(defn stream-name
   [stream name-str]
   (.name stream name-str))
 
-(defn debug*
+(defn debug
   [stream]
   (.each stream
          (.getOutputFields stream)
          (Debug.)))
 
-(defn broadcast*
+(defn broadcast
   [stream]
   (.broadcast stream))
 
