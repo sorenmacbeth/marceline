@@ -10,23 +10,18 @@
         storm.trident.testing
         marceline.storm.testing.trident-wordcount))
 
-(defn- mk-spout []
-  (FixedBatchSpout.
-    (marceline/fields "sentence")
-    4
-    (into-array (map marceline/values '("the cow jumped over the moon"
-                                        "four score and seven years ago"
-                                        "how many can you eat"
-                                        "to be or not to be the person")))))
+(def test-vals '("the cow jumped over the moon"
+                 "four score and seven years ago"
+                 "how many can you eat"
+                 "to be or not to be the person"))
 
 (deftest wordcount-drpc
   (t/with-local-cluster [cluster]
     (with-drpc [drpc]
-      (let [spout (doto (mk-spout)
-                    (.setCycle false))
-            topology (build-topology spout drpc)]
+      (let [feeder (t/feeder-spout ["sentence"])
+            topology (build-topology feeder drpc)]
         (with-topology [cluster topology]
-          (Thread/sleep 3000)
+          (feed feeder (into-array test-vals))
           (is (= 4
                  (ffirst
                    (exec-drpc drpc "words"
