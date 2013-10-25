@@ -10,10 +10,10 @@
         storm.trident.testing
         marceline.storm.testing.trident-wordcount))
 
-(def test-vals '("the cow jumped over the moon"
-                 "four score and seven years ago"
-                 "how many can you eat"
-                 "to be or not to be the person"))
+(def test-vals [["the cow jumped over the moon"]
+                ["four score and seven years ago"]
+                ["how many can you eat"]
+                ["to be or not to be the person"]])
 
 (deftest wordcount-drpc
   (t/with-local-cluster [cluster]
@@ -21,9 +21,9 @@
       (let [feeder (t/feeder-spout ["sentence"])
             topology (build-topology feeder drpc)]
         (with-topology [cluster topology]
-          (feed feeder (into-array test-vals))
+          (feed feeder test-vals)
           (is (= 4
                  (ffirst
-                   (exec-drpc drpc "words"
-                              "cat dog the man jumped"))))
-          )))))
+                  (exec-drpc drpc
+                             "words"
+                             "cat dog the man jumped")))))))))
