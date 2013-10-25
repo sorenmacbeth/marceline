@@ -15,6 +15,5 @@
                  "snapshots" {:url "s3p://maven.yieldbot.com/snapshots/"
                               :username :env :passphrase :env}})
 
-
 (cemerick.pomegranate.aether/register-wagon-factory!
  "s3p" #(eval '(org.springframework.aws.maven.PrivateS3Wagon.)))
