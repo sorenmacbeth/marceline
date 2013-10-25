@@ -1,6 +1,8 @@
 (ns marceline.storm.trident
-  (:import [storm.trident.operation.builtin Debug]
+  (:import [storm.trident TridentState]
+           [storm.trident.operation.builtin Debug]
            [storm.trident.tuple TridentTuple TridentTupleView]
+           [storm.trident.fluent GroupedStream]
            [backtype.storm.tuple Values Fields]
            [backtype.storm.utils RotatingMap TimeCacheMap]
            [marceline.storm.trident.clojure
@@ -422,9 +424,12 @@
 
 (defn debug
   [stream]
-  (.each stream
-         (.getOutputFields stream)
-         (Debug.)))
+  (condp isa? (class stream)
+    GroupedStream (debug (.toStream stream))
+    TridentState (do (debug (.newValuesStream stream)) stream)
+    (.each stream
+           (.getOutputFields stream)
+           (Debug.))))
 
 (defn broadcast
   [stream]
