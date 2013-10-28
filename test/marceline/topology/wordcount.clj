@@ -1,4 +1,4 @@
-(ns marceline.storm.testing.trident-wordcount
+(ns marceline.topology.wordcount
   (:import storm.trident.TridentTopology
            [storm.trident.operation.builtin
             MapGet

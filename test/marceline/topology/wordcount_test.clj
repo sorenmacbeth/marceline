@@ -1,4 +1,4 @@
-(ns marceline.storm.testing.trident-wordcount-test
+(ns marceline.topology.wordcount-test
   (:import [storm.trident.testing
             MemoryMapState$Factory
             FixedBatchSpout])
@@ -8,7 +8,7 @@
         clojure.pprint
         [backtype.storm clojure config]
         storm.trident.testing
-        marceline.storm.testing.trident-wordcount))
+        marceline.topology.wordcount))
 
 (def TEST-VALS [["the cow jumped over the moon"]
                 ["four score and seven years ago"]
