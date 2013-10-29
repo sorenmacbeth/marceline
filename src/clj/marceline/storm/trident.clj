@@ -412,11 +412,15 @@
   (.project stream (apply fields keep-fields)))
 
 (defn aggregate
-  [stream in-fields agg fn-fields]
-  (.aggregate stream
-              (apply fields in-fields)
-              agg
-              (apply fields fn-fields)))
+  ([stream agg fn-fields]
+     (.aggregate stream
+                 agg
+                 (apply fields fn-fields)))
+  ([stream in-fields agg fn-fields]
+     (.aggregate stream
+                 (apply fields in-fields)
+                 agg
+                 (apply fields fn-fields))))
 
 (defn stream-name
   [stream name-str]
