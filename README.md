@@ -8,6 +8,9 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 
 * [Overview](#overview)
 * [Installation](#installation)
+* [Creating a topology](#topologies)
+* [Streams](#streams)
+* [Functions](#functions)
 * [Terminology](#terminology)
 
 <a name="overview">
@@ -22,6 +25,11 @@ Marceline provides a DSL that allows you to define all of the primitives that Tr
 
 **TODO: provide lein installation instructions once an artifact is produced**
 
+<a name="topologies">
+## Creating a topology
+
+A Trident topology usually consists of three basic parts, a [stream](#terminology)
+
 <a name="streams">
 ## Streams
 
@@ -32,9 +40,10 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
   (:require [marceline.storm.trident :as t]))
-            
+
 (defn mk-fixed-batch-spout [max-batch-size]
   (FixedBatchSpout.
+   ;; Name the tuples that the spout will emit.
    (t/fields "sentence")
    max-batch-size
    (into-array (map t/values '("lord ogdoad"
@@ -51,10 +60,52 @@ You can add this stream to your topology by calling that function along with mar
   (:require [marceline.storm.trident :as t])
   (:import [storm.trident.TridentTopology]))
 
-(let [trident-topology (TridentTopology.)
-      spout (doto (mk-fixed-batch-spout 3)
-              (.setCycle true))]
-    (t/new-stream trident-topology "word-counts" spout))
+(defn build-topology []
+  (let [trident-topology (TridentTopology.)
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
+      (t/new-stream trident-topology "word-counts" spout)))
+```
+
+Once you've done that, new `sentence` tuples will be emitted into the topology.
+
+<a name="functions">
+## Functions
+
+Trident functions accept tuples from streams or other functions as input, and emit new tuples into the topology
+after performing some processing on them:
+
+```clojure
+(ns com.black.magic.level-eight-evil-topology
+ (:require [marceline.storm.trident :as t]
+           [clojure.string :as string :only [split]]))
+
+(t/deftridentfn split-args
+  [tuple coll]
+  (when-let [args (t/first tuple)]
+    (let [words (string/split args #" ")]
+      (doseq [word words]
+        (t/emit-fn coll word)))))
+```
+
+`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a function
+`split-args` that takes a tuple, and emits a new tuple into the topology for each 'word' in the sentence.
+
+Here, we add the `split-args` function for each `sentence` tuple emitted into the topology, and define the
+output tuple as `word`:
+
+```clojure
+(ns com.black.magic.level-eight-evil-topology
+ (:require [marceline.storm.trident :as t]))
+
+(defn build-topology []
+  (let [trident-topology (TridentTopology.)
+        word-counts (-> (t/new-stream trident-topology "word-counts" spout))
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
+    (t/each ["sentence"]
+            split-args
+            ["word"])))
 ```
 
 <a name="terminology">
@@ -62,3 +113,4 @@ You can add this stream to your topology by calling that function along with mar
 
 * **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](https://github.com/nathanmarz/storm/wiki/Trident-spouts).
 * **stream**: A stream is an unending sequence of batches that are emitted from a spout.
+* **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
