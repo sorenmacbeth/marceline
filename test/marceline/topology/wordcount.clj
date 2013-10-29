@@ -43,9 +43,7 @@
 (t/deffilter
   filter-null
   [tuple]
-  (if (nil? (t/first tuple))
-    false
-    true))
+  (not (nil? (t/first tuple))))
 
 (defn build-topology [spout drpc]
   (let [word-state-factory (MemoryMapState$Factory.)
