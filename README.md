@@ -8,7 +8,6 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 
 * [Overview](#overview)
 * [Installation](#installation)
-* [Creating a topology](#topologies)
 * [Streams](#streams)
 * [Functions](#functions)
 * [Terminology](#terminology)
@@ -24,11 +23,6 @@ Marceline provides a DSL that allows you to define all of the primitives that Tr
 ## Installation
 
 **TODO: provide lein installation instructions once an artifact is produced**
-
-<a name="topologies">
-## Creating a topology
-
-A Trident topology usually consists of three basic parts, a [stream](#terminology)
 
 <a name="streams">
 ## Streams
