@@ -40,6 +40,13 @@
       (doseq [word words]
         (t/emit-fn coll word)))))
 
+(t/deffilterfn
+  filter-null
+  [tuple]
+  (if (nil? (t/first tuple))
+    false
+    true))
+
 (defn build-topology [spout drpc]
   (let [word-state-factory (MemoryMapState$Factory.)
         trident-topology (TridentTopology.)
@@ -65,7 +72,7 @@
                                        ["word"]
                                        (MapGet.)
                                        ["count"])
-                        (t/each ["count"] (FilterNull.))
+                        (t/each ["count"] filter-null)
                         (t/aggregate ["count"]
                                      sum
                                      ["sum"])
