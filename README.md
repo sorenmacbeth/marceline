@@ -11,8 +11,10 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Streams](#streams)
 * [Functions](#functions)
 * [Grouping and Partitioning Streams](#grouping)
+* [Aggregations and State](#aggregations)
 * [Parallelism and Tuning](#parallelism)
 * [Terminology](#terminology)
+
 
 <a name="overview">
 ## Overview
@@ -142,6 +144,55 @@ Marceline allows you to group and partition streams of tuples. In our `level-eig
 * `batch-global`: All tuples in the batch are sent to the same partition. Different batches in the stream may go to different partitions.
 * `partition-by`: takes in a set of fields and does semantic partitioning based on that set of fields. The fields are hashed and modded by the number of target partitions to select the target partition. partitionBy guarantees that the same set of fields always goes to the same target partition.
 * `group-by`: repartitions the stream by doing a `partitionBy` on the specified fields, and then within each partition groups tuples together whose group fields are equal.
+* `broadcast`: Every tuple is replicated to all target partitions.
+
+<a name="aggregations">
+## Aggregations and State
+
+In our `level-eight-evil-topology`, we've split sentences into tuples, grouped them by word, and now we want to count them. Marceline provides `defcombineraggregator` for you to define an aggregation.
+
+### `defcombineraggregator`
+
+```clojure
+(t/defcombineraggregator
+  count-words
+  ([] 0)
+  ([tuple] 1)
+  ([t1 t2] (+ t1 t2)))
+```
+
+`defcombineraggregator` takes a name for the combiner, and three function arities. The first function arity is what is returned if there are no tuples in the partition. In this case, 0. The second function arity is run on each input tuple, and the third arity is used to combine values until there is only one value left.
+
+We'll use our `count-words` function in the next section.
+
+### `persistent-aggregate`
+
+To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as it's first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running.
+
+```clojure
+(ns com.black.magic.level-eight-evil-topology
+  (:require [marceline.storm.trident :as t])
+  (:import [storm.trident.TridentTopology
+           [storm.trident.testing MemoryMapState$Factory
+            FixedBatchSpout]]))
+
+(defn build-topology []
+  (let [word-state-factory (MemoryMapState$Factory.)
+        trident-topology (TridentTopology.)
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
+    (-> (t/new-stream trident-topology "word-counts" spout)
+        (t/parallelism-hint 16)
+        (t/each ["sentence"]
+                split-args
+                ["word"])
+        (t/group-by ["word"])
+        ;; Here, we persist our counts of words to our in-memory state.
+        (t/persistent-aggregate word-state-factory
+                                ["word"]
+                                count-words
+                                ["count"]))))
+```
 
 <a name="parallelism">
 ## Parallelism and Tuning
@@ -177,3 +228,4 @@ Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our 
 * **stream**: A stream is an unending sequence of batches that are emitted from a spout.
 * **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
 * **partition**: Tuples in a Trident batch can be partitioned into logical, or randomly distributed subsets of batches of tuples for distribution to workers in a topology.
+* **state**: Trident and Marceline provide support for reading and writing the result of processing to sources of state. The state can be internal to the topology (in memory), or stored externally in a database.
