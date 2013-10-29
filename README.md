@@ -83,14 +83,26 @@ after performing some processing on them:
 ```
 
 `deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a function
-`split-args` that takes a tuple, and emits a new tuple into the topology for each 'word' in the sentence.
+`split-args` that takes a tuple, and emits a new tuple into the topology for each 'word' in the sentence
+by calling `emit-fn` on the `AppendCollector` that gets passed into the function.
 
-Here, we add the `split-args` function for each `sentence` tuple emitted into the topology, and define the
+Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the
 output tuple as `word`:
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
- (:require [marceline.storm.trident :as t]))
+  (:require [marceline.storm.trident :as t])
+  (:import [storm.trident.TridentTopology]))
+
+(defn build-topology []
+  (let [trident-topology (TridentTopology.)
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
+    (-> (t/new-stream trident-topology "word-counts" spout)
+        (t/each ["sentence"]
+                split-args
+                ["word"]))))
+```
 
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
