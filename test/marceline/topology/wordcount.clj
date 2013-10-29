@@ -40,7 +40,7 @@
       (doseq [word words]
         (t/emit-fn coll word)))))
 
-(t/deffilterfn
+(t/deffilter
   filter-null
   [tuple]
   (if (nil? (t/first tuple))

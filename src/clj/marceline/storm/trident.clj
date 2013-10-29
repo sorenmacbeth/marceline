@@ -17,7 +17,7 @@
             ClojureBackingMap])
   (:require [clojure.tools.logging :as log]
             [backtype.storm.clojure :refer (to-spec normalize-fns)])
-  (:refer-clojure :exclude [group-by get nth vals first count partition-by shuffle])
+  (:refer-clojure :exclude [group-by get nth vals first count partition-by shuffle filter])
   (:gen-class))
 
 ;; ## tridentfn
@@ -54,22 +54,22 @@
            ~fn-body)
          ~definer))))
 
-;; ## filterfn
-(defn clojure-filterfn* [fn-var args]
+;; ## filter
+(defn clojure-filter* [fn-var args]
   (ClojureFilter. (to-spec fn-var) args))
 
-(defmacro clojure-filterfn [fn-sym args]
-  `(clojure-filterfn* (var ~fn-sym) ~args))
+(defmacro clojure-filter [fn-sym args]
+  `(clojure-filter* (var ~fn-sym) ~args))
 
-(defmacro filterfn [& body]
+(defmacro filter [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
     `(reify storm.trident.operation.Filter
        ~@fns)))
 
-(defmacro deffilterfn [name & [opts & impl :as all]]
+(defmacro deffilter [name & [opts & impl :as all]]
   (if-not (map? opts)
-    `(deffilterfn ~name {} ~@all)
+    `(deffilter ~name {} ~@all)
     (let [params (:params opts)
           fn-name (symbol (str name "__"))
           fn-body (if (:prepare opts)
@@ -77,12 +77,12 @@
                     (let [[args & impl-body] impl
                           args (vec args)
                           prepargs [(gensym "conf") (gensym "context")]]
-                      `(fn ~prepargs (filterfn (~'isKeep ~args ~@impl-body)))))
+                      `(fn ~prepargs (filter (~'isKeep ~args ~@impl-body)))))
           definer (if params
                     `(defn ~name [& args#]
-                       (clojure-filterfn ~fn-name args#))
+                       (clojure-filter ~fn-name args#))
                     `(def ~name
-                       (clojure-filterfn ~fn-name [])))]
+                       (clojure-filter ~fn-name [])))]
       `(do
          (defn ~fn-name ~(if params params [])
            ~fn-body)
