@@ -10,14 +10,18 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Installation](#installation)
 * [Streams](#streams)
 * [Functions](#functions)
+* [Grouping and Partitioning Streams](#grouping)
+* [Parallelism and Tuning](#parallelism)
 * [Terminology](#terminology)
 
 <a name="overview">
 ## Overview
 
-Trident provides a layer of abstraction over [Storm](http://storm-project.net/) that allows forstateful stream processing and distributed querying.
+Trident provides a layer of abstraction over [Storm](http://storm-project.net/) that allows for stateful stream processing and distributed querying.
 
-Marceline provides a DSL that allows you to define all of the primitives that Trident has to offer from clojure.
+Marceline provides a DSL that allows you to define all of the primitives that Trident has to offer from Clojure.
+
+Ready? Grab your willing vessel, and let's do this!
 
 <a name="installation">
 ## Installation
@@ -104,15 +108,54 @@ output tuple as `word`:
                 ["word"]))))
 ```
 
+<a name="grouping">
+## Grouping and Partitioning Streams
+
+Marceline allows you to group and partition streams of tuples. In our `level-eight-evil-topology` we'll want to group this stream after splitting each word out into it's own tuple, so we can perform aggregations on it later.
+
+```clojure
+(ns com.black.magic.level-eight-evil-topology
+  (:require [marceline.storm.trident :as t])
+  (:import [storm.trident.TridentTopology]))
+
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
-        word-counts (-> (t/new-stream trident-topology "word-counts" spout))
         spout (doto (mk-fixed-batch-spout 3)
                 (.setCycle true))]
-    (t/each ["sentence"]
-            split-args
-            ["word"])))
+    (-> (t/new-stream trident-topology "word-counts" spout)
+        (t/each ["sentence"]
+                split-args
+                ["word"])
+        ;; Group this stream by `word`
+        (t/group-by ["word"]))))
 ```
+
+<a name="parallelism">
+## Parallelism and Tuning
+
+Understanding parallelism in Trident can be tricky. If you're not familiar with the concept in Storm or Trident, I suggest you read [Understanding the parallelism of a Storm topology](https://github.com/nathanmarz/storm/wiki/Understanding-the-parallelism-of-a-Storm-topology) first, and then have a look at [Phillip Kromer's gist](https://gist.github.com/mrflip/5958028).
+
+Marceline provides the `paralellism-hint` function, which allows you to set the parallelism of a stream, which can have different effects, depending on where you invoke it in the definition of your topology:
+
+```clojure
+(ns com.black.magic.level-eight-evil-topology
+  (:require [marceline.storm.trident :as t])
+  (:import [storm.trident.TridentTopology]))
+
+(defn build-topology []
+  (let [trident-topology (TridentTopology.)
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
+    (-> (t/new-stream trident-topology "word-counts" spout)
+        (t/parallelism-hint 16)
+        (t/each ["sentence"]
+                split-args
+                ["word"])
+        ;; Group this stream by `word`
+        (t/group-by ["word"]))))
+```
+
+Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our topology, telling Trident to create 16 [spouts](#terminology) for this stream.
 
 <a name="terminology">
 ## Terminology
