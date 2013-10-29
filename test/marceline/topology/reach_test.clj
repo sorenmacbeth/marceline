@@ -1,12 +1,7 @@
 (ns marceline.topology.reach-test
-  (:import [storm.trident.testing
-            MemoryMapStateInitable$Factory
-            FixedBatchSpout])
-  (:require [backtype.storm.testing :as t]
-            [marceline.storm.trident :as marceline])
+  (:import [storm.trident.testing MemoryMapStateInitable$Factory])
+  (:require [backtype.storm.testing :as t])
   (:use clojure.test
-        clojure.pprint
-        [backtype.storm clojure config]
         storm.trident.testing
         marceline.topology.reach))
 

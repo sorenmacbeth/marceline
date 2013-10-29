@@ -1,7 +1,7 @@
 (ns marceline.storm.trident
   (:import [storm.trident TridentState]
            [storm.trident.operation.builtin Debug]
-           [storm.trident.tuple TridentTuple TridentTupleView]
+           [storm.trident.tuple TridentTupleView]
            [storm.trident.fluent GroupedStream]
            [backtype.storm.tuple Values Fields]
            [backtype.storm.utils RotatingMap TimeCacheMap]
@@ -15,8 +15,7 @@
             ClojureStateUpdater
             ClojureStateFactory
             ClojureBackingMap])
-  (:require [clojure.tools.logging :as log]
-            [backtype.storm.clojure :refer (to-spec normalize-fns)])
+  (:require [backtype.storm.clojure :refer (to-spec normalize-fns)])
   (:refer-clojure :exclude [group-by get nth vals first count partition-by shuffle filter])
   (:gen-class))
 

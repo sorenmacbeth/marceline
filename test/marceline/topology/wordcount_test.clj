@@ -1,12 +1,6 @@
 (ns marceline.topology.wordcount-test
-  (:import [storm.trident.testing
-            MemoryMapState$Factory
-            FixedBatchSpout])
-  (:require [backtype.storm.testing :as t]
-            [marceline.storm.trident :as marceline])
+  (:require [backtype.storm.testing :as t])
   (:use clojure.test
-        clojure.pprint
-        [backtype.storm clojure config]
         storm.trident.testing
         marceline.topology.wordcount))
 

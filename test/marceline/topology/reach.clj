@@ -1,14 +1,8 @@
 (ns marceline.topology.reach
   (:import storm.trident.TridentTopology
-           [storm.trident.operation.builtin
-            MapGet
-            Sum]
-           storm.trident.state.StateType
-           [storm.trident.testing MemoryMapState$Factory FixedBatchSpout MemoryMapStateInitable$Factory]
-           [backtype.storm LocalDRPC LocalCluster StormSubmitter])
-  (:require [marceline.storm.trident :as t]
-            [clojure.string :as string :only [join split]])
-  (:use [backtype.storm clojure config])
+           [storm.trident.operation.builtin MapGet Sum]
+           [storm.trident.testing MemoryMapStateInitable$Factory])
+  (:require [marceline.storm.trident :as t])
   (:gen-class))
 
 
