@@ -113,6 +113,9 @@ output tuple as `word`:
 
 Marceline allows you to group and partition streams of tuples. In our `level-eight-evil-topology` we'll want to group this stream after splitting each word out into it's own tuple, so we can perform aggregations on it later.
 
+<a name="group-by">
+### Group by
+
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
   (:require [marceline.storm.trident :as t])
@@ -129,6 +132,16 @@ Marceline allows you to group and partition streams of tuples. In our `level-eig
         ;; Group this stream by `word`
         (t/group-by ["word"]))))
 ```
+
+<a name="repartitioning-operations">
+### Repartitioning Operations
+
+[Repartitoning operations](https://github.com/nathanmarz/storm/wiki/Trident-API-Overview#repartitioning-operations) that Marceline supports:
+
+* `shuffle`: uses a random round robin algorithm to evenly redistribute tuples across all target [partitions](#terminology).
+* `batch-global`: All tuples in the batch are sent to the same partition. Different batches in the stream may go to different partitions.
+* `partition-by`: takes in a set of fields and does semantic partitioning based on that set of fields. The fields are hashed and modded by the number of target partitions to select the target partition. partitionBy guarantees that the same set of fields always goes to the same target partition.
+* `group-by`: repartitions the stream by doing a `partitionBy` on the specified fields, and then within each partition groups tuples together whose group fields are equal.
 
 <a name="parallelism">
 ## Parallelism and Tuning
@@ -163,3 +176,4 @@ Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our 
 * **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](https://github.com/nathanmarz/storm/wiki/Trident-spouts).
 * **stream**: A stream is an unending sequence of batches that are emitted from a spout.
 * **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
+* **partition**: Tuples in a Trident batch can be partitioned into logical, or randomly distributed subsets of batches of tuples for distribution to workers in a topology.
