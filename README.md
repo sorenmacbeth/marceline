@@ -13,9 +13,9 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Grouping and Partitioning Streams](#grouping)
 * [Project](#project)
 * [Aggregations and State](#aggregations)
+* [DRPC Topologies](#drpc)
 * [Parallelism and Tuning](#parallelism)
 * [Terminology](#terminology)
-
 
 <a name="overview">
 ## Overview
@@ -117,6 +117,7 @@ output tuple as `word`:
 `project` keeps only the fields you specify from being emitted further into the topology.
 If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])`
 the output stream will only contain the fields `word`.
+
 <a name="grouping">
 ## Grouping and Partitioning Streams
 
@@ -174,7 +175,7 @@ We'll use our `count-words` function in the next section.
 
 ### `persistent-aggregate`
 
-To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as it's first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running.
+To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as it's first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running. `MemoryMapState` stores data behind the scenes in a `java.util.concurrent.ConcurrentHashMap` that we can use to simulate a persistent k/v store.
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
@@ -200,6 +201,63 @@ To store these word counts, we need to update a source of state. `persistent-agg
                                 count-words
                                 ["count"]))))
 ```
+
+<a name="drpc">
+## DRPC Topologies
+
+Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) topology in addition to our regular would-count topology. We want Marceline to return a sum of counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
+
+In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`.
+
+```clojure
+(ns com.black.magic.level-eight-evil-topology
+  (:require [marceline.storm.trident :as t]
+  (:import [backtype.storm LocalDRPC]
+           [storm.trident.operation.builtin
+            MapGet
+            FilterNull])))
+
+;; First we need to define a `defcombineraggregator` to calculate a sum
+(t/defcombineraggregator
+  sum
+  ([] 0)
+  ([tuple] (t/first tuple))
+  ([t1 t2] (+ t1 t2)))
+
+(defn build-topology []
+  (let [trident-topology (TridentTopology.)
+        drpc (LocalDRPC.)
+        ;; Here we build our usual word count topology
+        word-counts (-> (t/new-stream trident-topology "word-counts" spout)
+                        (t/each ["sentence"]
+                                split-args
+                                ["word"])
+                        (t/group-by ["word"])
+                        (t/persistent-aggregate word-state-factory
+                                               ["word"]
+                                               count-words
+                                               ["count"]))]
+    ;; Now we create our new DRPC stream to produce the sum of counts.
+    (-> (t/new-stream trident-topology "words" drpc)
+        (t/each ["args"]
+                split-args
+                ["word"])
+        (t/project ["word"])
+        (t/group-by ["word"])
+        ;; here we use `state-query` to query the topology we created above.
+        (t/state-query word-counts
+                       ["word"]
+                       (MapGet.)
+                       ["count"])
+        (t/each ["count"] (FilterNull.))
+        (t/aggregate ["count"]
+                     sum
+                     ["sum"]))))
+```
+
+To use `state-query`, we need to pass it the Trident topology we'll query—`word-counts`, the name of the tuples that we're querying on `["word"]`, and a Trident operation `MapGet`, that will emit the count for each word. We're using the builtin function `FilterNull` to remove counts of null.
+
+Finally, we pass these counts to our `defcombineraggregator` function `sum` using Marceline's `aggregate` to return a final count.
 
 <a name="parallelism">
 ## Parallelism and Tuning
@@ -236,3 +294,4 @@ Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our 
 * **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
 * **partition**: Tuples in a Trident batch can be partitioned into logical, or randomly distributed subsets of batches of tuples for distribution to workers in a topology.
 * **state**: Trident and Marceline provide support for reading and writing the result of processing to sources of state. The state can be internal to the topology (in memory), or stored externally in a database.
+* **DRPC**: DRPC stands for Distributed Remote Procedure Call. For more info, see [Distributed RPC](https://github.com/nathanmarz/storm/wiki/Distributed-RPC).
