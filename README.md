@@ -11,6 +11,7 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Streams](#streams)
 * [Functions](#functions)
 * [Grouping and Partitioning Streams](#grouping)
+* [Project](#project)
 * [Aggregations and State](#aggregations)
 * [Parallelism and Tuning](#parallelism)
 * [Terminology](#terminology)
@@ -110,6 +111,12 @@ output tuple as `word`:
                 ["word"]))))
 ```
 
+<a name="project">
+## Project
+
+`project` keeps only the fields you specify from being emitted further into the topology.
+If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])`
+the output stream will only contain the fields `word`.
 <a name="grouping">
 ## Grouping and Partitioning Streams
 
