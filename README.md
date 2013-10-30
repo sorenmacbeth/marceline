@@ -114,8 +114,7 @@ output tuple as `word`:
 <a name="project">
 ## Project
 
-`project` keeps only the fields you specify from being emitted further into the topology.
-If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])`
+`project` keeps only the [fields](#terminology) you specify from being emitted further into the topology. If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])`
 the output stream will only contain the fields `word`.
 
 <a name="grouping">
@@ -291,6 +290,7 @@ Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our 
 
 * **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](https://github.com/nathanmarz/storm/wiki/Trident-spouts).
 * **stream**: A stream is an unending sequence of batches that are emitted from a spout.
+* **field**: A field is a named tuple in a trident topology. Streams can consist of multiple fields.
 * **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
 * **partition**: Tuples in a Trident batch can be partitioned into logical, or randomly distributed subsets of batches of tuples for distribution to workers in a topology.
 * **state**: Trident and Marceline provide support for reading and writing the result of processing to sources of state. The state can be internal to the topology (in memory), or stored externally in a database.
