@@ -245,6 +245,30 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
 
 To use `state-query`, we need to pass it a source of state. In this case, we're using the Trident topology `word-counts` as our source. We pass `state-query` the name of the tuples that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
 
+
+### Querying the DRPC topoology
+
+Now we need a way to start our topology, submit some words to count, and query using DRPC. In this example, we're using the `mk-fixed-batch-spout` fn that we defined earlier, and
+the `build-topology` function above.
+
+```clojure
+(defn run-local! []
+  (let [cluster (LocalCluster.)
+        local-drpc (LocalDRPC.)
+        spout (doto (mk-fixed-batch-spout 3)
+                (.setCycle true))]
+    (.submitTopology cluster "wordcounter"
+                     {}
+                     (.build
+                      (build-topology
+                       spout
+                       local-drpc)))
+    (Thread/sleep 10000)
+    (.execute local-drpc "words" "evil vessel ogdoad")
+    (.shutdown cluster)
+    (System/exit 0)))
+```
+
 <a name="parallelism">
 ## Parallelism and Tuning
 
