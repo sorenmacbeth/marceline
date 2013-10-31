@@ -204,7 +204,7 @@ To store these word counts, we need to update a source of state. `persistent-agg
 <a name="drpc">
 ## DRPC Topologies
 
-Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) topology in addition to our regular would-count topology. We want Marceline to return a sum of counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
+Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) topology in addition to our regular would-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
 
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`.
 
@@ -213,15 +213,7 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
   (:require [marceline.storm.trident :as t]
   (:import [backtype.storm LocalDRPC]
            [storm.trident.operation.builtin
-            MapGet
-            FilterNull])))
-
-;; First we need to define a `defcombineraggregator` to calculate a sum
-(t/defcombineraggregator
-  sum
-  ([] 0)
-  ([tuple] (t/first tuple))
-  ([t1 t2] (+ t1 t2)))
+            MapGet])))
 
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
@@ -247,16 +239,10 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
         (t/state-query word-counts
                        ["word"]
                        (MapGet.)
-                       ["count"])
-        (t/each ["count"] (FilterNull.))
-        (t/aggregate ["count"]
-                     sum
-                     ["sum"]))))
+                       ["count"]))))
 ```
 
-To use `state-query`, we need to pass it the Trident topology we'll query—`word-counts`, the name of the tuples that we're querying on `["word"]`, and a Trident operation `MapGet`, that will emit the count for each word. We're using the builtin function `FilterNull` to remove counts of null.
-
-Finally, we pass these counts to our `defcombineraggregator` function `sum` using Marceline's `aggregate` to return a final count.
+To use `state-query`, we need to pass it a source of state. In this case, we're using the Trident topology `word-counts` as our source. We pass `state-query` the name of the tuples that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
 
 <a name="parallelism">
 ## Parallelism and Tuning
