@@ -204,7 +204,7 @@ To store these word counts, we need to update a source of state. `persistent-agg
 <a name="drpc">
 ## DRPC Topologies
 
-Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) topology in addition to our regular would-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
+Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) stream in addition to our regular would-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
 
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`.
 
@@ -225,9 +225,9 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
                                 ["word"])
                         (t/group-by ["word"])
                         (t/persistent-aggregate word-state-factory
-                                               ["word"]
-                                               count-words
-                                               ["count"]))]
+                                                ["word"]
+                                                count-words
+                                                ["count"]))]
     ;; Now we create our new DRPC stream to produce the sum of counts.
     (-> (t/new-stream trident-topology "words" drpc)
         (t/each ["args"]
@@ -239,7 +239,8 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
         (t/state-query word-counts
                        ["word"]
                        (MapGet.)
-                       ["count"]))))
+                       ["count"]))
+    trident-topology))
 ```
 
 To use `state-query`, we need to pass it a source of state. In this case, we're using the Trident topology `word-counts` as our source. We pass `state-query` the name of the tuples that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
