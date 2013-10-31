@@ -464,7 +464,7 @@
 (defprotocol ClojureTridentTuple
   (first [this])
   (count [this])
-  (get [this index] [this index not-found])
+  (get [this field] [this field not-found])
   (nth [this index] [this index not-found])
   (vals [this]))
 
@@ -477,10 +477,10 @@
     [this]
     (.size ^TridentTupleView this))
   (get
-    ([this index]
-       (.getValue ^TridentTupleView this index))
-    ([this index not-found]
-       (or (.getValue ^TridentTupleView this index)
+    ([this field]
+       (.getValueByField ^TridentTupleView this (name field)))
+    ([this field not-found]
+       (or (.getValueByField ^TridentTupleView this (name field))
            not-found)))
   (nth
     ([this index]

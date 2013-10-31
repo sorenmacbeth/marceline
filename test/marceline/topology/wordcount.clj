@@ -27,10 +27,11 @@
 (t/defcombineraggregator
   sum
   ([] 0)
-  ([tuple] (t/first tuple))
+  ([tuple] (t/get tuple :count)) ;; fields can be specified with keywords or strings
   ([t1 t2] (+ t1 t2)))
 
-(t/deftridentfn split-args
+(t/deftridentfn
+  split-args
   [tuple coll]
   (when-let [args (t/first tuple)]
     (let [words (string/split args #" ")]
