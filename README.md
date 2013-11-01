@@ -49,12 +49,12 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
    max-batch-size
    (into-array (map t/values '("lord ogdoad"
                                "master of level eight shadow world"
-                               "the willing vessel offers forth it's pure essence")
+                               "the willing vessel offers forth its pure essence")
 ```
 
 This function returns a [spout](#terminology), that can be used to create a new [stream](#terminology) for the topology.
 
-You can add this stream to your topology by calling that function along with marcie's `new-stream` function like so:
+You can add this stream to your topology by calling that function along with  Marcie's `new-stream` function like so:
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
@@ -89,12 +89,10 @@ after performing some processing on them:
         (t/emit-fn coll word)))))
 ```
 
-`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a function
-`split-args` that takes a tuple, and emits a new tuple into the topology for each 'word' in the sentence
+`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a Trident [function](#terminology) `split-args` that takes a tuple, and emits a new tuple into the topology for each 'word' in the sentence
 by calling `emit-fn` on the `AppendCollector` that gets passed into the function.
 
-Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the
-output tuple as `word`:
+Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the output field as `word`:
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
@@ -115,12 +113,12 @@ output tuple as `word`:
 ## Project
 
 `project` keeps only the [fields](#terminology) you specify from being emitted further into the topology. If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])`
-the output stream will only contain the fields `word`.
+the output stream only contains the `word` field.
 
 <a name="grouping">
 ## Grouping and Partitioning Streams
 
-Marceline allows you to group and partition streams of tuples. In our `level-eight-evil-topology` we'll want to group this stream after splitting each word out into it's own tuple, so we can perform aggregations on it later.
+Marceline allows you to group and partition streams of tuples. In our `level-eight-evil-topology` we'll want to group this stream after splitting each word out into its own tuple, so we can perform aggregations on it later.
 
 <a name="group-by">
 ### Group by
@@ -174,7 +172,7 @@ We'll use our `count-words` function in the next section.
 
 ### `persistent-aggregate`
 
-To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as it's first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running. `MemoryMapState` stores data behind the scenes in a `java.util.concurrent.ConcurrentHashMap` that we can use to simulate a persistent k/v store.
+To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as its first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running. `MemoryMapState` stores data behind the scenes in a `java.util.concurrent.ConcurrentHashMap` that we can use to simulate a persistent k/v store.
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
@@ -204,7 +202,7 @@ To store these word counts, we need to update a source of state. `persistent-agg
 <a name="drpc">
 ## DRPC Topologies
 
-Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) stream in addition to our regular would-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
+Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) stream in addition to our regular word-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
 
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`.
 
@@ -243,8 +241,7 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
     trident-topology))
 ```
 
-To use `state-query`, we need to pass it a source of state. In this case, we're using the Trident topology `word-counts` as our source. We pass `state-query` the name of the tuples that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
-
+To use `state-query`, we need to pass it a source of state. In this case, we're using the `TridentState` returned by the `persistent-aggregate` function as our source of state. We pass `state-query` the name of the field that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
 
 ### Querying the DRPC topoology
 
@@ -300,6 +297,7 @@ Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our 
 ## Terminology
 
 * **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](https://github.com/nathanmarz/storm/wiki/Trident-spouts).
+* **function**: A Trident function takes in a set of input fields, and emits zero or more tuples as output. See the [Trident docs](https://github.com/nathanmarz/storm/wiki/Trident-API-Overview#functions) for more information.
 * **stream**: A stream is an unending sequence of batches that are emitted from a spout.
 * **field**: A field is a named tuple in a trident topology. Streams can consist of multiple fields.
 * **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
