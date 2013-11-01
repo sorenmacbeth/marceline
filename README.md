@@ -89,7 +89,7 @@ after performing some processing on them:
         (t/emit-fn coll word)))))
 ```
 
-`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a Trident [function](#terminology) `split-args` that takes a tuple, and emits a new tuple into the topology for each 'word' in the sentence
+`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a Trident [function](#terminology) `split-args` that takes a tuple, and emits a new tuple into the topology for each `word` in the sentence
 by calling `emit-fn` on the `AppendCollector` that gets passed into the function.
 
 Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the output field as `word`:
