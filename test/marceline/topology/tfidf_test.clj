@@ -4,15 +4,15 @@
         storm.trident.testing
         marceline.topology.tfidf))
 
-(def DOCUMENTS [[["twitter" "0" "a b c d"]]
-                [["twitter" "1" "a e f g"]]
-                [["twitter" "2" "a h i j"]]
-                [["twitter" "3" "a b b k l l l l"]]])
+(def DOCUMENTS [["twitter" "0" "a b c d"]
+                ["twitter" "1" "a e f g"]
+                ["twitter" "2" "a h i j"]
+                ["twitter" "3" "a b b k l l l l"]])
 
 (deftest wordcount-drpc
   (t/with-local-cluster [cluster]
     (with-drpc [drpc]
-      (let [feeder (feeder-spout ["document"])
+      (let [feeder (feeder-spout ["source" "doc-id" "terms"])
             topology (build-topology feeder drpc)]
         (with-topology [cluster topology]
           (feed feeder DOCUMENTS)

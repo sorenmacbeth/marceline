@@ -7,11 +7,6 @@
             [clojure.string :as string :only [split]])
   (:gen-class))
 
-(t/deftridentfn emit-fields
-  [tuple coll]
-  (when-let [fields (t/first tuple)]
-    (apply t/emit-fn coll fields)))
-
 (defn split-first-tuple-on-ws
   [tuple]
   (when-let [args (t/first tuple)]
@@ -47,7 +42,6 @@
         ;; source streams
         document-stream
         (-> (t/new-stream trident-topology "document-spout" spout)
-            (t/each ["document"] emit-fields ["source" "doc-id" "terms"])
             (t/project ["source" "doc-id" "terms"]))
 
         source-stream
