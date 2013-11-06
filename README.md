@@ -199,6 +199,8 @@ To store these word counts, we need to update a source of state. `persistent-agg
                                 ["count"]))))
 ```
 
+In this example, we're using the `group-by ["word"]` to tell trident to update a `MapState` where the keys are words and the values are the counts of those words. You can write custom state updaters, state factories and query other sources of state using Marceline.
+
 <a name="drpc">
 ## DRPC Topologies
 
