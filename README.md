@@ -29,7 +29,11 @@ Ready? Grab your willing vessel, and let's do this!
 <a name="installation">
 ## Installation
 
-**TODO: provide lein installation instructions once an artifact is produced**
+Marceline is available from clojars. Add the following to your project's `deps`.
+
+```
+[yieldbot/marceline "0.1.0-SNAPSHOT"]
+```
 
 <a name="streams">
 ## Streams
