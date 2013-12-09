@@ -233,7 +233,7 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
                                                 count-words
                                                 ["count"]))]
     ;; Now we create our new DRPC stream to produce the sum of counts.
-    (-> (t/new-stream trident-topology "words" drpc)
+    (-> (t/drpc-stream trident-topology "words" drpc)
         (t/each ["args"]
                 split-args
                 ["word"])
