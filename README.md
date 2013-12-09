@@ -210,7 +210,7 @@ In this example, we're using the `group-by ["word"]` to tell trident to update a
 
 Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) stream in addition to our regular word-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
 
-In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`.
+In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`. For remote topology submission, just use `nil` instead of the `LocalDRPC`.
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
