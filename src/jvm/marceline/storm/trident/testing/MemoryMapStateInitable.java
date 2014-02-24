@@ -23,9 +23,12 @@ public class MemoryMapStateInitable<T> implements Snapshottable<T>, ITupleCollec
         _delegate = new SnapshottableMap(OpaqueMap.build(_backing), new Values("$MEMORY-MAP-STATE-GLOBAL$"));
 	List<List<Object>> compoundKeys = new ArrayList<List<Object>>();
 	List<T> values = new ArrayList<T>();
+	// key is compound
 	for (Object key : initState.keySet()) {
 	    List<Object> compoundKey = new ArrayList<Object>();
-	    compoundKey.add(key);
+	    for (Object keyComponent : (List) key){
+		compoundKey.add(keyComponent);
+	    }
 	    compoundKeys.add(compoundKey);
 	    values.add((T) (initState.get(key)));
 	}
