@@ -1,38 +1,60 @@
 (ns marceline.storm.metrics
-  (:require [backtype.storm.clojure :refer (to-spec normalize-fns)])
-  (:import [marceline.storm.trident.clojure ClojureMetricsConsumer])
+  (:import [backtype.storm.metric.api IMetric CountMetric MultiCountMetric])
+  (:require [backtype.storm.clojure :refer (to-spec normalize-fns)]
+            [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
   (:gen-class))
 
-;; ## metrics consumer
-(defn clojure-metrics-consumer* [fn-var args]
-  (ClojureMetricsConsumer. (to-spec fn-var) args))
 
-(defmacro clojure-metrics-consumer [fn-sym args]
-  `(clojure-metrics-consumer* (var ~fn-sym) ~args))
 
-(defmacro metrics-consumer [& body]
-  (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
-        fns (normalize-fns base-fns)]
-    `(reify backtype.storm.metric.api.IMetricsConsumer
-       ~@fns)))
+(defmacro defmetricsconsumer
+  [name prepare-impl handle-data-points-impl cleanup-impl]
+  (let [prefix (gensym)
+        classname (str *ns* ".consumer." name)]
+    `(do
+       (gen-class :name ~classname
+                  :implements [backtype.storm.metric.api.IMetricsConsumer]
+                  :prefix ~prefix)
+       (defn ~(symbol (str prefix "prepare"))
+         ~@prepare-impl)
+       (defn ~(symbol (str prefix "handleDataPoints"))
+         ~@handle-data-points-impl)
+       (defn ~(symbol (str prefix "cleanup"))
+         ~@cleanup-impl)
+       (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
+                   [{"class" ~classname
+                     "parallelism.hint" 1
+                     "argument" nil}]}))))
 
-(defmacro defmetricsconsumer [name & [opts & impl :as all]]
-  (if-not (map? opts)
-    `(defmetricsconsumer ~name {} ~@all)
-    (let [params (:params opts)
-          fn-name (symbol (str name "__"))
-          fn-body (if (:prepare opts)
-                    (cons 'fn impl)
-                    (let [[args & impl-body] impl
-                          prepargs [(gensym "conf") (gensym "registation-argument") (gensym "context") (gensym "error-reporter")]]
-                      `(fn ~prepargs (metrics-consumer
-                                      (~'handleDataPoints ~(vec args) ~@impl-body)))))
-          definer (if params
-                    `(defn ~name [& args#]
-                       (clojure-metrics-consumer ~fn-name args#))
-                    `(def ~name
-                       (clojure-metrics-consumer ~fn-name [])))]
-      `(do
-         (defn ~fn-name ~(if params params [])
-           ~fn-body)
-         ~definer))))
+(defmacro defmetric
+  [get-value-and-reset-impl]
+  `(reify IMetric
+     (getValueAndReset [this]
+       (do ~@get-value-and-reset-impl))))
+
+
+;; TODO maybe change how to pass these around (metrics + curry fns)
+(defn count-metric
+  []
+  (let [cm (CountMetric.)]
+    {:fn (fn [] (.incr cm))
+     :m cm}))
+
+(defn multi-count-metric
+  []
+  (let [mcm (MultiCountMetric.)]
+    {:fn (fn [k] (.incr (.scope mcm k)))
+     :m mcm}))
+
+(defn register-metrics
+  [topology-context metrics]
+  (doseq [[name imetric periodicity] metrics]
+    (.registerMetric topology-context name imetric (int periodicity))))
+
+(defmacro with-multi-count
+  [topology-context nm & body]
+  `(let [m# (multi-count-metric)
+         ~nm (:fn m#)]
+     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 30]])
+     (do ~@body)))
+
+;; TODO more general with-metrics macro
