@@ -9,11 +9,18 @@
 (defmacro defmetricsconsumer
   [name prepare-impl handle-data-points-impl cleanup-impl]
   (let [prefix (gensym)
-        classname (str *ns* ".consumer." name)]
+        classname (str *ns* ".consumer." name)
+        state "state"
+        init "init"]
     `(do
        (gen-class :name ~classname
                   :implements [backtype.storm.metric.api.IMetricsConsumer]
-                  :prefix ~prefix)
+                  :prefix ~prefix
+                  :state ~state
+                  :init ~init)
+       (defn ~(symbol (str prefix "init"))
+         []
+         [[] (atom {})])
        (defn ~(symbol (str prefix "prepare"))
          ~@prepare-impl)
        (defn ~(symbol (str prefix "handleDataPoints"))
