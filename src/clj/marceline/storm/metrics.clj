@@ -4,34 +4,36 @@
 	    [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
   (:gen-class))
 
-;; TODO allow params
-;; TODO make cleanup optional
 (defmacro defmetricsconsumer
-  [name prepare-impl handle-data-points-impl & [cleanup-impl?]]
-  (let [prefix (gensym)
-	classname (str *ns* ".consumer." name)
-	state "state"
-	init "init"
-        cleanup-impl (or cleanup-impl? `([_#]))]
-    `(do
-       (gen-class :name ~classname
-		  :implements [backtype.storm.metric.api.IMetricsConsumer]
-		  :prefix ~prefix
-		  :state ~state
-		  :init ~init)
-       (defn ~(symbol (str prefix "init"))
-	 []
-	 [[] (atom {})])
-       (defn ~(symbol (str prefix "prepare"))
-	 ~@prepare-impl)
-       (defn ~(symbol (str prefix "handleDataPoints"))
-	 ~@handle-data-points-impl)
-       (defn ~(symbol (str prefix "cleanup"))
-	 ~@cleanup-impl)
-       (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
-		   [{"class" ~classname
-		     "parallelism.hint" 1
-		     "argument" nil}]}))))
+  [name & [opts & impl :as all]]
+  (if-not (map? opts)
+    `(defmetricsconsumer ~name {} ~@all)
+    (let [prefix (gensym)
+          classname (str *ns* ".consumer." name)
+          state "state"
+          init "init"
+          [prepare-impl handle-data-points-impl & [cleanup-impl?]] impl
+          cleanup-impl (or cleanup-impl? `([_#]))
+          parallelism (:p opts 1)]
+      `(do
+         (gen-class :name ~classname
+                    :implements [backtype.storm.metric.api.IMetricsConsumer]
+                    :prefix ~prefix
+                    :state ~state
+                    :init ~init)
+         (defn ~(symbol (str prefix "init"))
+           []
+           [[] (atom {})])
+         (defn ~(symbol (str prefix "prepare"))
+           ~@prepare-impl)
+         (defn ~(symbol (str prefix "handleDataPoints"))
+           ~@handle-data-points-impl)
+         (defn ~(symbol (str prefix "cleanup"))
+           ~@cleanup-impl)
+         (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
+                     [{"class" ~classname
+                       "parallelism.hint" ~parallelism
+                       "argument" nil}]})))))
 
 (defmacro defmetric
   [get-value-and-reset-impl]
