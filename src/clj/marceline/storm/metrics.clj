@@ -51,12 +51,19 @@
 ;; so why not pull whatever arg out of
 ;; the rest of the conf?
 
-(defmacro defmetric
+(defmacro metric
   [get-value-and-reset-impl]
   `(reify IMetric
      (getValueAndReset [this]
-       (do ~@get-value-and-reset-impl))))
+       (~get-value-and-reset-impl))))
 
+(defn defmetric
+  [init-value update-fn]
+  (let [s (atom init-value)]
+    {:fn (partial swap! s update-fn)
+     :m (metric (fn [] (let [v @s]
+                         (reset! s init-value)
+                         v)))}))
 
 (defn count-metric
   []

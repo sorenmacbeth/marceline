@@ -35,16 +35,19 @@
   split-args
   {:prepare true}
   [conf context]
-  (m/with-count context wrds
-    (t/tridentfn
-     (execute
-      [tuple coll]
-      (when-let [args (t/first tuple)]
-        (Thread/sleep 1000) ;; this is to give the metrics longer to report
-        (let [words (string/split args #" ")]
-          (doseq [word words]
-            (wrds)
-            (t/emit-fn coll word))))))))
+  (let [inc-metric (m/defmetric 0 inc)]
+    (m/register-metrics context [["inc-metric" (:m inc-metric) 1]])
+    (m/with-count context wrds
+      (t/tridentfn
+       (execute
+        [tuple coll]
+        (when-let [args (t/first tuple)]
+          (Thread/sleep 1000) ;; this is to give the metrics longer to report
+          (let [words (string/split args #" ")]
+            (doseq [word words]
+              (wrds)
+              ((:fn inc-metric))
+              (t/emit-fn coll word)))))))))
 
 (t/deffilter
   filter-null
