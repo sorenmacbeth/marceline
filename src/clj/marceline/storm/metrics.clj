@@ -89,3 +89,10 @@
          ~nm (:fn m#)]
      (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 30]])
      (do ~@body)))
+
+
+;; helper fns
+(defn conf-state!
+  "Sets a consumer's state to be the conf map."
+  [this-consumer conf]
+  (reset! (. this-consumer state) conf))
