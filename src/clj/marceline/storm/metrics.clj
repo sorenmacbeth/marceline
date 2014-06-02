@@ -103,3 +103,8 @@
   "Sets a consumer's state to be the conf map."
   [this-consumer conf]
   (reset! (. this-consumer state) conf))
+
+(defn metric-vals
+  [metric-name data-points]
+  (doseq [metric-point (filter #(= metric-vals (.name %)) data-points)]
+    (.value metric-point)))
