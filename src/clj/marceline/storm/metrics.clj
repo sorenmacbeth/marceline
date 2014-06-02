@@ -1,36 +1,37 @@
 (ns marceline.storm.metrics
   (:import [backtype.storm.metric.api IMetric CountMetric MultiCountMetric])
   (:require [backtype.storm.clojure :refer (to-spec normalize-fns)]
-            [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
+	    [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
   (:gen-class))
 
-
-
+;; TODO allow params
+;; TODO make cleanup optional
 (defmacro defmetricsconsumer
-  [name prepare-impl handle-data-points-impl cleanup-impl]
+  [name prepare-impl handle-data-points-impl & [cleanup-impl?]]
   (let [prefix (gensym)
-        classname (str *ns* ".consumer." name)
-        state "state"
-        init "init"]
+	classname (str *ns* ".consumer." name)
+	state "state"
+	init "init"
+        cleanup-impl (or cleanup-impl? `([_#]))]
     `(do
        (gen-class :name ~classname
-                  :implements [backtype.storm.metric.api.IMetricsConsumer]
-                  :prefix ~prefix
-                  :state ~state
-                  :init ~init)
+		  :implements [backtype.storm.metric.api.IMetricsConsumer]
+		  :prefix ~prefix
+		  :state ~state
+		  :init ~init)
        (defn ~(symbol (str prefix "init"))
-         []
-         [[] (atom {})])
+	 []
+	 [[] (atom {})])
        (defn ~(symbol (str prefix "prepare"))
-         ~@prepare-impl)
+	 ~@prepare-impl)
        (defn ~(symbol (str prefix "handleDataPoints"))
-         ~@handle-data-points-impl)
+	 ~@handle-data-points-impl)
        (defn ~(symbol (str prefix "cleanup"))
-         ~@cleanup-impl)
+	 ~@cleanup-impl)
        (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
-                   [{"class" ~classname
-                     "parallelism.hint" 1
-                     "argument" nil}]}))))
+		   [{"class" ~classname
+		     "parallelism.hint" 1
+		     "argument" nil}]}))))
 
 (defmacro defmetric
   [get-value-and-reset-impl]
@@ -60,7 +61,7 @@
 (defmacro with-multi-count
   [topology-context nm & body]
   `(let [m# (multi-count-metric)
-         ~nm (:fn m#)]
+	 ~nm (:fn m#)]
      (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 30]])
      (do ~@body)))
 
