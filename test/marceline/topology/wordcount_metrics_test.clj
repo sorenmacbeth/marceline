@@ -16,7 +16,7 @@
     (with-drpc [drpc]
       (let [feeder (feeder-spout ["sentence"])
             topology (build-topology feeder drpc)]
-        (with-topology-conf [cluster topology m/log-consumer-no-cleanup]
+        (with-topology-conf [cluster topology (m/log-consumer-no-cleanup {})]
           (feed feeder TEST-VALS)
           (is (= 4
                  (ffirst
