@@ -37,7 +37,7 @@
   [conf context]
   (let [inc-metric (m/defmetric 0 inc)]
     (m/register-metrics context [["inc-metric" (:m inc-metric) 1]])
-    (m/with-count context wrds
+    (m/with-count context 1 wrds
       (t/tridentfn
        (execute
         [tuple coll]

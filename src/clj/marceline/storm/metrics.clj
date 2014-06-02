@@ -84,17 +84,17 @@
 
 ;; with-* metrics
 (defmacro with-count
-  [topology-context nm & body]
+  [topology-context periodicity nm & body]
   `(let [m# (count-metric)
          ~nm (:fn m#)]
-     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 1]])
+     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) ~periodicity]])
      (do ~@body)))
 
 (defmacro with-multi-count
-  [topology-context nm & body]
+  [topology-context periodicity nm & body]
   `(let [m# (multi-count-metric)
          ~nm (:fn m#)]
-     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 30]])
+     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) ~periodicity]])
      (do ~@body)))
 
 
