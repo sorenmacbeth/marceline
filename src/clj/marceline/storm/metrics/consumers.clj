@@ -18,7 +18,8 @@
      (println "log consumer cleaning up")))
 
 (m/defmetricsconsumer log-consumer-no-cleanup
+  {:state 42}
   ([this conf registation-arg context error-reporter]
-     (println "log consumer initializing"))
+     (println "log consumer initializing" (.state this)))
   ([this data-points]
      (println "log consumer handling data points: " data-points)))

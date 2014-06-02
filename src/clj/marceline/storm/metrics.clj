@@ -9,31 +9,33 @@
   (if-not (map? opts)
     `(defmetricsconsumer ~name {} ~@all)
     (let [prefix (gensym)
-          classname (str *ns* ".consumer." name)
-          state "state"
-          init "init"
-          [prepare-impl handle-data-points-impl & [cleanup-impl?]] impl
-          cleanup-impl (or cleanup-impl? `([_#]))
-          parallelism (:p opts 1)]
+	  classname (str *ns* ".consumer." name)
+	  state "state"
+	  init "init"
+	  [prepare-impl handle-data-points-impl & [cleanup-impl?]] impl
+	  cleanup-impl (or cleanup-impl? `([_#]))
+	  ;; options
+	  parallelism (:p opts 1)
+	  init-state (:state opts {})]
       `(do
-         (gen-class :name ~classname
-                    :implements [backtype.storm.metric.api.IMetricsConsumer]
-                    :prefix ~prefix
-                    :state ~state
-                    :init ~init)
-         (defn ~(symbol (str prefix "init"))
-           []
-           [[] (atom {})])
-         (defn ~(symbol (str prefix "prepare"))
-           ~@prepare-impl)
-         (defn ~(symbol (str prefix "handleDataPoints"))
-           ~@handle-data-points-impl)
-         (defn ~(symbol (str prefix "cleanup"))
-           ~@cleanup-impl)
-         (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
-                     [{"class" ~classname
-                       "parallelism.hint" ~parallelism
-                       "argument" nil}]})))))
+	 (gen-class :name ~classname
+		    :implements [backtype.storm.metric.api.IMetricsConsumer]
+		    :prefix ~prefix
+		    :state ~state
+		    :init ~init)
+	 (defn ~(symbol (str prefix "init"))
+	   []
+	   [[] (atom ~init-state)])
+	 (defn ~(symbol (str prefix "prepare"))
+	   ~@prepare-impl)
+	 (defn ~(symbol (str prefix "handleDataPoints"))
+	   ~@handle-data-points-impl)
+	 (defn ~(symbol (str prefix "cleanup"))
+	   ~@cleanup-impl)
+	 (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
+		     [{"class" ~classname
+		       "parallelism.hint" ~parallelism
+		       "argument" nil}]})))))
 
 (defmacro defmetric
   [get-value-and-reset-impl]
