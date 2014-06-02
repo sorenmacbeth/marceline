@@ -4,7 +4,7 @@
   (:use clojure.test
         storm.trident.testing
         marceline.storm.testing
-        marceline.topology.wordcount))
+        marceline.topology.wordcount-metrics))
 
 (def TEST-VALS [["the cow jumped over the moon"]
                 ["four score and seven years ago"]
@@ -22,4 +22,9 @@
                  (ffirst
                   (exec-drpc drpc
                              "words"
-                             "cat dog the man jumped")))))))))
+                             "cat dog the man jumped"))))
+          (is (= 2
+                 (ffirst
+                  (exec-drpc drpc
+                             "words"
+                             "seven person")))))))))

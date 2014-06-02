@@ -4,6 +4,7 @@
            [storm.trident.testing MemoryMapState$Factory FixedBatchSpout]
            [backtype.storm LocalDRPC LocalCluster StormSubmitter])
   (:require [marceline.storm.trident :as t]
+            [marceline.storm.metrics :as m]
             [clojure.string :as string :only [split]])
   (:use [backtype.storm config])
   (:gen-class))
@@ -32,11 +33,18 @@
 
 (t/deftridentfn
   split-args
-  [tuple coll]
-  (when-let [args (t/first tuple)]
-    (let [words (string/split args #" ")]
-      (doseq [word words]
-        (t/emit-fn coll word)))))
+  {:prepare true}
+  [conf context]
+  (m/with-count context wrds
+    (t/tridentfn
+     (execute
+      [tuple coll]
+      (when-let [args (t/first tuple)]
+        (Thread/sleep 1000) ;; this is to give the metrics longer to report
+        (let [words (string/split args #" ")]
+          (doseq [word words]
+            (wrds)
+            (t/emit-fn coll word))))))))
 
 (t/deffilter
   filter-null

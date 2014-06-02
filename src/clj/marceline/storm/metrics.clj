@@ -32,9 +32,17 @@
 	   ~@handle-data-points-impl)
 	 (defn ~(symbol (str prefix "cleanup"))
 	   ~@cleanup-impl)
+         ;; this should probably be a fn
+         ;; can merge itself properly into any existing conf
+         ;; and also take args
 	 (def ~name {~TOPOLOGY-METRICS-CONSUMER-REGISTER
-		     [{"class" ~classname
+                     [{"class" ~classname
 		       "parallelism.hint" ~parallelism
+		       ;; I don't see the value of this argument
+		       ;; it's passed during `prepare`, which
+		       ;; is also passed the entire conf map.
+		       ;; so why not pull whatever arg out of
+		       ;; the rest of the conf?
 		       "argument" nil}]})))))
 
 (defmacro defmetric
@@ -44,7 +52,6 @@
        (do ~@get-value-and-reset-impl))))
 
 
-;; TODO maybe change how to pass these around (metrics + curry fns)
 (defn count-metric
   []
   (let [cm (CountMetric.)]
@@ -62,11 +69,17 @@
   (doseq [[name imetric periodicity] metrics]
     (.registerMetric topology-context name imetric (int periodicity))))
 
+;; with-* metrics
+(defmacro with-count
+  [topology-context nm & body]
+  `(let [m# (count-metric)
+	 ~nm (:fn m#)]
+     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 1]])
+     (do ~@body)))
+
 (defmacro with-multi-count
   [topology-context nm & body]
   `(let [m# (multi-count-metric)
 	 ~nm (:fn m#)]
      (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) 30]])
      (do ~@body)))
-
-;; TODO more general with-metrics macro
