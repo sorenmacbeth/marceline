@@ -4,6 +4,7 @@
             [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
   (:gen-class))
 
+
 (defmacro defmetricsconsumer
   [name & [opts & impl :as all]]
   (if-not (map? opts)
@@ -32,9 +33,6 @@
            ~@handle-data-points-impl)
          (defn ~(symbol (str prefix "cleanup"))
            ~@cleanup-impl)
-         ;; this should probably be a fn
-         ;; can merge itself properly into any existing conf
-         ;; and also take args
          (def ~name
            (fn [conf#]
              (merge-with
@@ -82,20 +80,29 @@
   (doseq [[name imetric periodicity] metrics]
     (.registerMetric topology-context name imetric (int periodicity))))
 
-;; with-* metrics
-(defmacro with-count
-  [topology-context periodicity nm & body]
-  `(let [m# (count-metric)
-         ~nm (:fn m#)]
-     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) ~periodicity]])
+;; for setting up metrics in components
+(defn builtin-or-custom-metric
+  [k]
+  (if (map? k)
+    k
+    (case k
+      :count (count-metric)
+      :multi-count (multi-count-metric))))
+
+(defmacro with-metric
+  [topology-context periodicity title mt & body]
+  `(let [m# (builtin-or-custom-metric ~mt)
+         ~title (:fn m#)]
+     (register-metrics ~topology-context [[(str (quote ~title)) (:m m#) ~periodicity]])
      (do ~@body)))
 
-(defmacro with-multi-count
-  [topology-context periodicity nm & body]
-  `(let [m# (multi-count-metric)
-         ~nm (:fn m#)]
-     (register-metrics ~topology-context [[(str (quote ~nm)) (:m m#) ~periodicity]])
-     (do ~@body)))
+(defmacro with-metrics
+  [topology-context periodicity mts & body]
+  (let [p (partition 2 mts)]
+    (if (< 1 (count p))
+      `(with-metric ~topology-context ~periodicity ~@(first p)
+         (with-metrics ~topology-context ~periodicity ~(apply concat (rest p)) ~@body))
+      `(with-metric ~topology-context ~periodicity ~@(first p) ~@body))))
 
 
 ;; helper fns
