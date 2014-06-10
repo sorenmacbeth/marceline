@@ -1,5 +1,5 @@
 (ns marceline.storm.trident
-  (:import [storm.trident TridentState]
+  (:import [storm.trident TridentState Stream]
            [storm.trident.operation.builtin Debug]
            [storm.trident.tuple TridentTupleView]
            [storm.trident.fluent GroupedStream]
@@ -17,7 +17,8 @@
             ClojureStateFactory
             ClojureBackingMap])
   (:require [backtype.storm.clojure :refer (to-spec normalize-fns)])
-  (:refer-clojure :exclude [group-by get nth vals first count partition-by shuffle filter])
+  (:refer-clojure :exclude [group-by get nth vals
+                            first count partition-by shuffle filter merge])
   (:gen-class))
 
 
@@ -443,6 +444,20 @@
   [stream]
   (.broadcast stream))
 
+(defn join
+  [topo
+   stream1 fields1
+   stream2 fields2
+   out-fields]
+  (.join topo
+         stream1 (apply fields fields1)
+         stream2 (apply fields fields2)
+         (apply fields out-fields)))
+
+(defn merge
+  [topo & streams]
+  (.merge topo
+          (into-array Stream streams)))
 
 ;; (trident/defqueryfn
 ;;   map-get
