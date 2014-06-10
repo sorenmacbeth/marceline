@@ -1,6 +1,9 @@
 (ns marceline.storm.testing
   (:require [backtype.storm [testing :as t]])
-  (:import [backtype.storm.generated KillOptions]))
+  (:import [backtype.storm.generated KillOptions]
+           [storm.trident.testing
+            MemoryMapState$Factory
+            LRUMemoryMapState$Factory]))
 
 
 (defn with-topology-conf* [cluster topo conf body-fn]
@@ -10,3 +13,12 @@
 
 (defmacro with-topology-conf [[cluster topo conf] & body]
   `(with-topology-conf* ~cluster ~topo ~conf (fn [] ~@body)))
+
+(defn memory-map-state-factory
+  []
+  (MemoryMapState$Factory.))
+
+(defn lru-memory-map-state-factory
+  [n]
+  (LRUMemoryMapState$Factory. n))
+
