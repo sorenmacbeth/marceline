@@ -4,6 +4,7 @@
            [storm.trident.tuple TridentTupleView]
            [storm.trident.fluent GroupedStream]
            [backtype.storm.tuple Values Fields]
+           [storm.trident.spout RichSpoutBatchExecutor]
            [backtype.storm.utils RotatingMap TimeCacheMap]
            [marceline.storm.trident.clojure
             ClojureFunction
@@ -18,6 +19,10 @@
   (:require [backtype.storm.clojure :refer (to-spec normalize-fns)])
   (:refer-clojure :exclude [group-by get nth vals first count partition-by shuffle filter])
   (:gen-class))
+
+
+;; This is to make configuration easier
+(def MAX_BATCH_SIZE_CONF RichSpoutBatchExecutor/MAX_BATCH_SIZE_CONF)
 
 ;; ## tridentfn
 (defn clojure-tridentfn* [fn-var args]
