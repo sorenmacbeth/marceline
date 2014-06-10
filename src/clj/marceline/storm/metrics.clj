@@ -72,7 +72,7 @@
 (defn multi-count-metric
   []
   (let [mcm (MultiCountMetric.)]
-    {:fn (fn [k] (.incr (.scope mcm k)))
+    {:fn (fn [k] (.incr (.scope mcm (name k))))
      :m mcm}))
 
 (defn register-metrics
