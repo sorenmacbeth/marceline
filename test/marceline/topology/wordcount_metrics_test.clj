@@ -2,6 +2,7 @@
   (:require [backtype.storm.testing :as t]
             [marceline.storm.metrics.consumers :as m])
   (:use clojure.test
+        backtype.storm.config
         storm.trident.testing
         marceline.storm.testing
         marceline.topology.wordcount-metrics))
@@ -15,8 +16,11 @@
   (t/with-local-cluster [cluster]
     (with-drpc [drpc]
       (let [feeder (feeder-spout ["sentence"])
-            topology (build-topology feeder drpc)]
-        (with-topology-conf [cluster topology (m/log-consumer-no-cleanup {})]
+            topology (build-topology feeder drpc)
+            conf-with-consumers (m/log-consumer (m/log-consumer-no-cleanup {}))]
+        (is (= 2
+               (count (get conf-with-consumers TOPOLOGY-METRICS-CONSUMER-REGISTER))))
+        (with-topology-conf [cluster topology conf-with-consumers]
           (feed feeder TEST-VALS)
           (is (= 4
                  (ffirst
