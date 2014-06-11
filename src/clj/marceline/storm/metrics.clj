@@ -34,14 +34,14 @@
          (defn ~(symbol (str prefix "cleanup"))
            ~@cleanup-impl)
          (def ~name
-           (fn [conf#]
+           (fn [conf# & [arg#]]
              (merge-with
               concat
               conf#
               {~TOPOLOGY-METRICS-CONSUMER-REGISTER
                [{"class" ~classname
                  "parallelism.hint" ~parallelism
-                 "argument" nil}]})))))))
+                 "argument" arg#}]})))))))
 
 ;; I don't see the value of this argument
 ;; it's passed during `prepare`, which
