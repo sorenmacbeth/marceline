@@ -106,10 +106,10 @@
 
 
 ;; helper fns
-(defn conf-state!
-  "Sets a consumer's state to be the conf map."
-  [this-consumer conf]
-  (reset! (. this-consumer state) conf))
+(defn reset-state!
+  "Sets a consumer's state to val."
+  [this-consumer val]
+  (reset! (. this-consumer state) val))
 
 (defn metric-vals
   [metric-name data-points]
