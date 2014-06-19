@@ -15,8 +15,8 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Aggregations and State](#aggregations)
 * [DRPC Topologies](#drpc)
 * [Parallelism and Tuning](#parallelism)
-* [Terminology](#terminology)
 * [Metrics](#metrics)
+* [Terminology](#terminology)
 
 <a name="overview">
 ## Overview
@@ -302,11 +302,11 @@ Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our 
 
 <a name="metrics">
 ## Metrics
-Storm provides an internal metrics system, which is used for reporting metrics in the Storm UI, but can also be used by topologies to report application metrics. For more information, see this [Endgame blog post](http://www.endgame.com/blog/storm-metrics-how-to.html) or the [Storm wiki page](https://github.com/nathanmarz/storm/wiki/Metrics). Note that marceline's metrics (like Storm's metrics) are meant for both trident as well as vanilla storm topologies.
+Storm provides an internal metrics system, which is used for reporting metrics in the Storm UI, but can also be used by topologies to report application metrics. For more information, see this [Endgame blog post](http://www.endgame.com/blog/storm-metrics-how-to.html) or the [Storm wiki page](https://github.com/nathanmarz/storm/wiki/Metrics). Note that marceline's metrics (like Storm's metrics) are meant for both trident as well as vanilla storm topologies. This documentation assumes a familiarity with Storm's metric system.
 
 An example instrumented version of the wordcount topology is [available](https://github.com/yieldbot/marceline/blob/master/test/marceline/topology/wordcount_metrics_test.clj).
 
-The metrics stuff lives in [marceline.storm.metrics](https://github.com/yieldbot/marceline/blob/master/src/clj/marceline/storm/metrics.clj).
+For the adventurous, the metrics wrapping source lives in [marceline.storm.metrics](https://github.com/yieldbot/marceline/blob/master/src/clj/marceline/storm/metrics.clj).
 
 ### Metrics Consumers
 Use the `defmetricsconsumer` macro to define custom metrics. `defmetricsconsumer` takes the name of your consumer, an optional hash-map of options, and the body of the consumer implementation. While `defmetricsconsumer` will generate a consumer class, the value will be a generated function that will manipulate the topology configuration. For example, consider `my-special-consumer` below.
@@ -329,7 +329,7 @@ Now we use `my-special-consumer` when we construct the topology configuration ma
 (my-special-consumer {TOPOLOGY-WORKERS 6})
 ```
 
-This is safe to do with multiple consumers; they will each add themselves without removing or overwriting others.
+Note that this consumer registration is safe to do with multiple consumers; they will each add themselves without removing or overwriting others.
 
 To use the registration argument, pass a second argument to your consumer fn. Say, `(my-special-consumer {} "my-registration-argument")`; this will end up being the registration argument passed to the consumer's initialization method.
 
