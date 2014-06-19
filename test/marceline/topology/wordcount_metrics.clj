@@ -38,7 +38,8 @@
   (m/with-metrics context 1
     [wrds :count
      inc-metric (m/defmetric 0 inc)
-     m-wrds :multi-count]
+     m-wrds :multi-count
+     m-wrds-double :multi-count]
     (t/tridentfn
      (execute
       [tuple coll]
@@ -47,6 +48,7 @@
         (let [words (string/split args #" ")]
           (doseq [word words]
             (m-wrds word)
+            (m-wrds-double word 2) ; can pass other values as second argument
             (wrds)
             (inc-metric)
             (t/emit-fn coll word))))))))

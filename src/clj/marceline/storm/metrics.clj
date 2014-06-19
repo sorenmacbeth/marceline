@@ -66,13 +66,18 @@
 (defn count-metric
   []
   (let [cm (CountMetric.)]
-    {:fn (fn [] (.incr cm))
+    {:fn (fn
+           ([] (.incr cm))
+           ([v] (.incrBy cm (long v))))
      :m cm}))
 
 (defn multi-count-metric
   []
   (let [mcm (MultiCountMetric.)]
-    {:fn (fn [k] (.incr (.scope mcm (name k))))
+    {:fn (fn
+           ([k] (.incr (.scope mcm (name k))))
+           ([k v] (.incrBy (.scope mcm (name k))
+                           (long v))))
      :m mcm}))
 
 (defn register-metrics
