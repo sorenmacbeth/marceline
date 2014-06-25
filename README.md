@@ -33,7 +33,7 @@ Ready? Grab your willing vessel, and let's do this!
 Marceline is available from clojars. Add the following to your project's `deps`.
 
 ```
-[yieldbot/marceline "0.1.0"]
+[yieldbot/marceline "0.2.0"]
 ```
 
 <a name="streams">
