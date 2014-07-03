@@ -50,5 +50,23 @@
 
 (extend-type MockTridentTuple
   trident/ClojureTridentTuple
-  (get [this field]
-    (.getValueByField ^MockTridentTuple this (name field))))
+  (first
+    [this]
+    (.getValue ^MockTridentTuple this 0))
+  (count
+    [this]
+    (.size ^MockTridentTuple this))
+  (get
+    ([this field]
+     (.getValueByField ^MockTridentTuple this (name field)))
+    ([this field not-found]
+     (or (.getValueByField ^MockTridentTuple this (name field))
+         not-found)))
+  (nth
+    ([this index]
+     (.getValue ^MockTridentTuple this index))
+    ([this index not-found]
+     (or (.getValue ^MockTridentTuple this index)
+         not-found)))
+  (vals [this]
+    (.getValues ^MockTridentTuple this)))
