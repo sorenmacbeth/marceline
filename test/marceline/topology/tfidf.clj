@@ -9,7 +9,7 @@
 
 (defn split-first-tuple-on-ws
   [tuple]
-  (when-let [args (t/first tuple)]
+  (when-let [args (first tuple)]
     (string/split args #" ")))
 
 (t/deftridentfn expand-terms
