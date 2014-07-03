@@ -33,7 +33,7 @@
 (t/deftridentfn
   split-args
   [tuple coll]
-  (when-let [args (first tuple)]
+  (when-let [args (t/first tuple)]
     (let [words (string/split args #" ")]
       (doseq [word words]
         (t/emit-fn coll word)))))
@@ -41,7 +41,7 @@
 (t/deffilter
   filter-null
   [tuple]
-  (not (nil? (first tuple))))
+  (not (nil? (t/first tuple))))
 
 (defn build-topology [spout drpc]
   (let [word-state-factory (MemoryMapState$Factory.)

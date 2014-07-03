@@ -43,7 +43,7 @@
     (t/tridentfn
      (execute
       [tuple coll]
-      (when-let [args (first tuple)]
+      (when-let [args (t/first tuple)]
         (Thread/sleep 1000) ;; this is to give the metrics longer to report
         (let [words (string/split args #" ")]
           (doseq [word words]
@@ -56,7 +56,7 @@
 (t/deffilter
   filter-null
   [tuple]
-  (not (nil? (first tuple))))
+  (not (nil? (t/first tuple))))
 
 (defn build-topology [spout drpc]
   (let [word-state-factory (MemoryMapState$Factory.)

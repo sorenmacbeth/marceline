@@ -116,9 +116,9 @@
                     (let [[[init-args & init-body] [agg-args & agg-body] [complete-args & complete-body]] impl
                           prepargs [(gensym "conf") (gensym "context")]]
                       `(fn ~prepargs (aggregator
-                                       (~'init ~(vec init-args) ~@init-body)
-                                       (~'aggregate ~(vec agg-args) ~@agg-body)
-                                       (~'complete ~(vec complete-args) ~@complete-body)))))
+                                     (~'init ~(vec init-args) ~@init-body)
+                                     (~'aggregate ~(vec agg-args) ~@agg-body)
+                                     (~'complete ~(vec complete-args) ~@complete-body)))))
           definer (if params
                     `(defn ~name [& args#]
                        (clojure-aggregator ~fn-name args#))
@@ -158,9 +158,9 @@
       `(do
          (defn ~fn-name ~(if params params [])
            (combiner-aggregator
-             (~'zero ~(vec zero-args) ~@zero-body)
-             (~'init ~(vec init-args) ~@init-body)
-             (~'combine ~(vec combine-args) ~@combine-body)))
+            (~'zero ~(vec zero-args) ~@zero-body)
+            (~'init ~(vec init-args) ~@init-body)
+            (~'combine ~(vec combine-args) ~@combine-body)))
          ~definer))))
 
 ;; ## reduceraggregator
@@ -214,8 +214,8 @@
                     (let [[[retrieve-args & retrieve-body] [execute-args & execute-body]] impl
                           prepargs [(gensym "conf") (gensym "context")]]
                       `(fn ~prepargs (queryfn
-                                       (~'batchRetrieve ~(vec retrieve-args) ~@retrieve-body)
-                                       (~'execute ~(vec execute-args) ~@execute-body)))))
+                                     (~'batchRetrieve ~(vec retrieve-args) ~@retrieve-body)
+                                     (~'execute ~(vec execute-args) ~@execute-body)))))
           definer (if params
                     `(defn ~name [& args#]
                        (clojure-queryfn ~fn-name args#))
@@ -287,7 +287,7 @@
       `(do
          (defn ~fn-name ~(if params params [])
            (state-factory
-             (~'makeState ~(vec args) ~@impl-body)))
+            (~'makeState ~(vec args) ~@impl-body)))
          ~definer))))
 
 ;; ## backingmap
@@ -318,8 +318,8 @@
       `(do
          (defn ~fn-name ~(if params params [])
            (backing-map
-             (~'multiGet ~(vec get-args) ~@get-body)
-             (~'multiPut ~(vec put-args) ~@put-body)))
+            (~'multiGet ~(vec get-args) ~@get-body)
+            (~'multiPut ~(vec put-args) ~@put-body)))
          ~definer))))
 
 (defn values [& v]
@@ -337,18 +337,18 @@
 ;; helpers for building up streams
 (defn each
   ([stream a b]
-   (if (sequential? a)
-     (.each stream
-            (apply fields a)
-            b)
-     (.each stream
-            a
-            (apply fields b))))
+     (if (sequential? a)
+       (.each stream
+              (apply fields a)
+              b)
+       (.each stream
+              a
+              (apply fields b))))
   ([stream in-fields fn-inst fn-fields]
-   (.each stream
-          (apply fields in-fields)
-          fn-inst
-          (apply fields fn-fields))))
+     (.each stream
+            (apply fields in-fields)
+            fn-inst
+            (apply fields fn-fields))))
 
 (defn shuffle
   [stream]
@@ -372,16 +372,16 @@
 
 (defn persistent-aggregate
   ([stream state fn-inst fn-fields]
-   (.persistentAggregate stream
-                         state
-                         fn-inst
-                         (apply fields fn-fields)))
+     (.persistentAggregate stream
+                           state
+                           fn-inst
+                           (apply fields fn-fields)))
   ([stream state in-fields fn-inst fn-fields]
-   (.persistentAggregate stream
-                         state
-                         (apply fields in-fields)
-                         fn-inst
-                         (apply fields fn-fields))))
+     (.persistentAggregate stream
+                           state
+                           (apply fields in-fields)
+                           fn-inst
+                           (apply fields fn-fields))))
 
 (defn parallelism-hint
   [stream h]
@@ -418,14 +418,14 @@
 
 (defn aggregate
   ([stream agg fn-fields]
-   (.aggregate stream
-               agg
-               (apply fields fn-fields)))
+     (.aggregate stream
+                 agg
+                 (apply fields fn-fields)))
   ([stream in-fields agg fn-fields]
-   (.aggregate stream
-               (apply fields in-fields)
-               agg
-               (apply fields fn-fields))))
+     (.aggregate stream
+                 (apply fields in-fields)
+                 agg
+                 (apply fields fn-fields))))
 
 (defn stream-name
   [stream name-str]
@@ -482,10 +482,31 @@
 
 
 (defprotocol ClojureTridentTuple
-  "Protocol for utilty methods on a TridentTuple"
-  (get [this field] "Get the value for a specific field. Throws an exception the field doesn't exist."))
+  (first [this])
+  (count [this])
+  (get [this field] [this field not-found])
+  (nth [this index] [this index not-found])
+  (vals [this]))
 
 (extend-type TridentTupleView
   ClojureTridentTuple
-  (get [this field]
-    (.getValueByField ^TridentTupleView this (name field))))
+  (first
+    [this]
+    (.getValue ^TridentTupleView this 0))
+  (count
+    [this]
+    (.size ^TridentTupleView this))
+  (get
+    ([this field]
+       (.getValueByField ^TridentTupleView this (name field)))
+    ([this field not-found]
+       (or (.getValueByField ^TridentTupleView this (name field))
+           not-found)))
+  (nth
+    ([this index]
+       (.getValue ^TridentTupleView this index))
+    ([this index not-found]
+      (or (.getValue ^TridentTupleView this index)
+        not-found)))
+  (vals [this]
+    (.getValues ^TridentTupleView this)))

@@ -13,7 +13,7 @@
 
 (t/deftridentfn expand-list
   [tuple coll]
-  (when-let [l (first tuple)]
+  (when-let [l (t/first tuple)]
     (doseq [obj l]
       (t/emit-fn coll obj))))
 
