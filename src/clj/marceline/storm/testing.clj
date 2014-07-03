@@ -1,9 +1,11 @@
 (ns marceline.storm.testing
-  (:require [backtype.storm [testing :as t]])
+  (:require [backtype.storm [testing :as t]]
+            [marceline.storm.trident :as trident])
   (:import [backtype.storm.generated KillOptions]
+           [marceline.storm.trident ClojureTridentTuple]
            [storm.trident.testing
             MemoryMapState$Factory
-            LRUMemoryMapState$Factory]))
+            LRUMemoryMapState$Factory MockTridentTuple]))
 
 
 (defn with-topology-conf* [cluster topo conf body-fn]
@@ -22,3 +24,7 @@
   [n]
   (LRUMemoryMapState$Factory. n))
 
+(extend-type MockTridentTuple
+  trident/ClojureTridentTuple
+  (get [this field]
+    (.getValueByField ^MockTridentTuple this (name field))))
