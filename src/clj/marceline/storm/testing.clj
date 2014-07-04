@@ -62,13 +62,23 @@
 (defn run-filter
   "Runs a Trident filter, defined with deffilter. Returns the boolean value from the filter.
   To pass in tuple values, they should come in the format of field, value, field value. e.g:
-  (run-function my-func :a \"a-value\" :b \"b-value\" :c \"c what I did there?\")"
+  (run-filter my-filter :a \"a-value\" :b \"b-value\" :c \"c what I did there?\")"
   [filter & args]
   (let [mock (apply new-mock-tuple args)
         context (new-nil-context)]
 
     (.prepare filter {} context)
     (.isKeep filter mock)))
+
+(defn run-combiner-aggregator
+  "Runs a combiner aggregator, as defined with defcombineraggregator. Returns a map with the results from the three functions, under the keys
+  :zero for the result of the [] arity function result. :init for the result [tuple] arity function and :combine for the [t1 t2] arity function.
+  The first and second values of the provided tuple field values are passed to the [t1 t2] arity funciton.
+  Tuple values, should come in the format of field, value, field value. e.g:
+  (run-combiner-aggregator my-aggregator :a \"a-value\" :b \"b-value\" :c \"c what I did there?\")"
+  [aggregator & args]
+  (let [mock (apply new-mock-tuple args)]
+    {:init (.init aggregator mock) :zero (.zero aggregator) :combine (.combine aggregator (first mock) (second mock))}))
 
 (extend-type MockTridentTuple
   trident/ClojureTridentTuple
