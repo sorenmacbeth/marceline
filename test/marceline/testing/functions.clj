@@ -18,7 +18,8 @@
     (is (= 4.3 (t/nth tuple 2)))
     (is (= 3 (t/count tuple)))
     (is (= [1 "bar" 4.3] (t/vals tuple)))
-    (is (= "bar" (t/get tuple "b")))))
+    (is (= "bar" (t/get tuple "b"))))
+  (is (= 0 (t/count (new-mock-tuple)))))
 
 (t/deftridentfn t-double
                 [tuple coll]

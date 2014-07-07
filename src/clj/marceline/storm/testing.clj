@@ -71,14 +71,25 @@
     (.isKeep filter mock)))
 
 (defn run-combiner-aggregator
-  "Runs a combiner aggregator, as defined with defcombineraggregator. Returns a map with the results from the three functions, under the keys
-  :zero for the result of the [] arity function result. :init for the result [tuple] arity function and :combine for the [t1 t2] arity function.
-  The first and second values of the provided tuple field values are passed to the [t1 t2] arity funciton.
-  Tuple values, should come in the format of field, value, field value. e.g:
-  (run-combiner-aggregator my-aggregator :a \"a-value\" :b \"b-value\" :c \"c what I did there?\")"
-  [aggregator & args]
-  (let [mock (apply new-mock-tuple args)]
-    {:init (.init aggregator mock) :zero (.zero aggregator) :combine (.combine aggregator (first mock) (second mock))}))
+  "Runs a combiner aggregator, as defined with defcombineraggregator. Returns a map with the following results, under the keys:
+  :zero for the result of the [] arity function result.
+  :init for the result [tuple] arity function. This function will be passed tuple1 as it's arguments.
+  :combine for the [t1 t2] arity function. This function will be passed the *results* of tuple1 and tuple2 being passed to the [tuple] arity function.
+  :combine-zero for the [t1 t2] arity function. This function will be passed the *results* of tuple1 being passed to the [tuple] arity function,
+                and the [] arity function, to test zero combinations.
+
+  As per usual tuple1 and tuple2 should be vectors that define your two tuples for testing. Tuple values, should come in the format of field, value, field value. e.g:
+  (run-combiner-aggregator my-aggregator [:a \"a-value\" :b \"b-value\" :c \"c what I did there?\"] [:a \"a-value2\" :b \"b-value2\" :c \"c what I didn't do there?\"])
+  "
+
+  [aggregator tuple1 tuple2]
+  (let [mtuple1 (apply new-mock-tuple tuple1)
+        mtuple2 (apply new-mock-tuple tuple2)]
+
+    {:init         (.init aggregator mtuple1)
+     :zero         (.zero aggregator)
+     :combine      (.combine aggregator (.init aggregator mtuple1) (.init aggregator mtuple2))
+     :combine-zero (.combine aggregator (.init aggregator mtuple1) (.zero aggregator))}))
 
 (extend-type MockTridentTuple
   trident/ClojureTridentTuple
