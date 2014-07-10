@@ -7,5 +7,6 @@
   :source-paths ["src/clj"]
   :java-source-paths ["src/jvm"]
   :javac-options ["-source" "1.6" "-target" "1.6"]
-  :profiles {:provided {:dependencies [[storm "0.9.0.1"]]}}
-  :dependencies [[org.clojure/clojure "1.4.0"]])
+  :profiles {:provided {:dependencies
+                        [[org.apache.storm/storm-core "0.9.2-incubating"]
+                         [org.clojure/clojure "1.5.1"]]}})
