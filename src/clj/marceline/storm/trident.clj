@@ -368,7 +368,10 @@
 
 (defn partition-persist
   [stream state-spec in-fields state-updater]
-  (.partitionPersist stream state-spec in-fields state-updater))
+  (.partitionPersist stream
+                     state-spec
+                     (apply fields in-fields)
+                     state-updater))
 
 (defn persistent-aggregate
   ([stream state fn-inst fn-fields]
