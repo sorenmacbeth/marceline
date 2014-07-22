@@ -44,8 +44,9 @@ Trident topologies start with streams. A stream is an input source for the topol
 In this example, we're using a `FixedBatchSpout` that will emit an infinite stream of sentences:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t]))
+(ns test.user
+  (:require [marceline.storm.trident :as t])
+  (:import [storm.trident.testing FixedBatchSpout]))
 
 (defn mk-fixed-batch-spout [max-batch-size]
   (FixedBatchSpout.
@@ -54,7 +55,7 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
    max-batch-size
    (into-array (map t/values '("lord ogdoad"
                                "master of level eight shadow world"
-                               "the willing vessel offers forth its pure essence")
+                               "the willing vessel offers forth its pure essence")))))
 ```
 
 This function returns a [spout](#terminology), that can be used to create a new [stream](#terminology) for the topology.
@@ -62,9 +63,7 @@ This function returns a [spout](#terminology), that can be used to create a new 
 You can add this stream to your topology by calling that function along with  Marcie's `new-stream` function like so:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology]))
+(import '[storm.trident TridentTopology])
 
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
@@ -82,9 +81,7 @@ Trident functions accept tuples from streams or other functions as input, and em
 after performing some processing on them:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
- (:require [marceline.storm.trident :as t]
-           [clojure.string :as string :only [split]]))
+(require '[clojure.string :as string :only [split]])
 
 (t/deftridentfn split-args
   [tuple coll]
@@ -100,10 +97,6 @@ by calling `emit-fn` on the `AppendCollector` that gets passed into the function
 Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the output field as `word`:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology]))
-
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
         spout (doto (mk-fixed-batch-spout 3)
@@ -129,10 +122,6 @@ Marceline allows you to group and partition streams of tuples. In our `level-eig
 ### Group by
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology]))
-
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
         spout (doto (mk-fixed-batch-spout 3)
@@ -180,11 +169,7 @@ We'll use our `count-words` function in the next section.
 To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as its first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running. `MemoryMapState` stores data behind the scenes in a `java.util.concurrent.ConcurrentHashMap` that we can use to simulate a persistent k/v store.
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology
-           [storm.trident.testing MemoryMapState$Factory
-            FixedBatchSpout]]))
+(import '[storm.trident.testing MemoryMapState$Factory])
 
 (defn build-topology []
   (let [word-state-factory (MemoryMapState$Factory.)
@@ -214,15 +199,12 @@ Now that we're storing state, we need a way to query our topology. To do that, w
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`. For remote topology submission, just use `nil` instead of the `LocalDRPC`.
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t]
-  (:import [backtype.storm LocalDRPC]
-           [storm.trident.operation.builtin
-            MapGet])))
+(import '[backtype.storm LocalDRPC])
+(import '[storm.trident.operation.builtin MapGet])
 
-(defn build-topology []
-  (let [trident-topology (TridentTopology.)
-        drpc (LocalDRPC.)
+(defn build-topology [spout drpc]
+  (let [word-state-factory (MemoryMapState$Factory.)
+       trident-topology (TridentTopology.)
         ;; Here we build our usual word count topology
         word-counts (-> (t/new-stream trident-topology "word-counts" spout)
                         (t/each ["sentence"]
@@ -256,7 +238,9 @@ Now we need a way to start our topology, submit some words to count, and query u
 the `build-topology` function above.
 
 ```clojure
-(defn run-local! []
+(import '[backtype.storm LocalCluster])
+
+(defn run-local! [drpc-words]
   (let [cluster (LocalCluster.)
         local-drpc (LocalDRPC.)
         spout (doto (mk-fixed-batch-spout 3)
@@ -268,10 +252,21 @@ the `build-topology` function above.
                        spout
                        local-drpc)))
     (Thread/sleep 10000)
-    (.execute local-drpc "words" "evil vessel ogdoad")
-    (.shutdown cluster)
-    (System/exit 0)))
+    (let [results (.execute local-drpc "words" drpc-words)]
+        (.shutdown cluster)
+        results)))
 ```
+
+You can run this function and see it's outputs like this:
+
+```clojure
+(def results (run-local! "evil vessel ogdoad"))
+results
+;; ==> [["evil", null] ["vessel", 172] ["ogdoad", 172]] 
+
+```
+
+**evil** is null because it doesn't appear in the the [fixed batch spout's array of values](#streams).  **vessel** and **ogdoad** do appear and thus they have a count.  The specific count will likely be slightly different on every run.
 
 <a name="parallelism">
 ## Parallelism and Tuning
