@@ -199,8 +199,8 @@ Now that we're storing state, we need a way to query our topology. To do that, w
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`. For remote topology submission, just use `nil` instead of the `LocalDRPC`.
 
 ```clojure
-(import '[backtype.storm LocalDRPC])
-(import '[storm.trident.operation.builtin MapGet])
+(import '[backtype.storm LocalDRPC]
+        '[storm.trident.operation.builtin MapGet])
 
 (defn build-topology [spout drpc]
   (let [word-state-factory (MemoryMapState$Factory.)
@@ -261,6 +261,7 @@ You can run this function and see it's outputs like this:
 
 ```clojure
 (def results (run-local! "evil vessel ogdoad"))
+;; storm will output a lot of messages
 results
 ;; ==> [["evil", null] ["vessel", 172] ["ogdoad", 172]] 
 
