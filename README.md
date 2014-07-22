@@ -44,7 +44,7 @@ Trident topologies start with streams. A stream is an input source for the topol
 In this example, we're using a `FixedBatchSpout` that will emit an infinite stream of sentences:
 
 ```clojure
-(ns test.user
+(ns com.black.magic.level-eight-evil-topology
   (:require [marceline.storm.trident :as t])
   (:import [storm.trident.testing FixedBatchSpout]))
 
