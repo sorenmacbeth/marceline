@@ -36,6 +36,8 @@ Marceline is available from clojars. Add the following to your project's `deps`.
 [yieldbot/marceline "0.2.0"]
 ```
 
+Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.5.1`.
+
 <a name="streams">
 ## Streams
 
