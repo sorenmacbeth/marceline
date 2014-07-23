@@ -16,6 +16,7 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [DRPC Topologies](#drpc)
 * [Parallelism and Tuning](#parallelism)
 * [Metrics](#metrics)
+* [Reading](#reading)
 * [Terminology](#terminology)
 
 <a name="overview">
@@ -362,6 +363,15 @@ Consider this example, which reports every minute.
 This macro binds the symbols, which will also be used as the `name` when registering with Storm, to values that are functions for updating metrics. The bound metrics are automatically defined and registered.
 
 Using `:count` or `:multi-count` specifies Storm's builtin `CountMetric` or `MultiCountMetric`, respectively. The value may also be a custom metric defined with `defmetric`, as above. The example `defmetric` is a re-implementation of `CountMetric`. The arguments to `defmetric` are simply an initial value and function to be used for updating the value.
+
+<a name="reading">
+## Reading
+There have been several blog posts related to marceline. Please PR to add any posts that aren't already here!
+
++ ["Marceline, the finer points"](http://derek.troywest.com/articles/finer-points-marceline/) by @d-t-w
++ ["Marceline's Instruments"](http://yieldbot.com/blog/marcelines-instruments) by @strongh
++ ["Say Hello to Marceline"](http://yieldbot.com/blog/say-hello-to-marceline-clojure-trident-dsl) by @sorenmacbeth
+
 
 <a name="terminology">
 ## Terminology
