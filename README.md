@@ -34,7 +34,7 @@ Ready? Grab your willing vessel, and let's do this!
 Marceline is available from clojars. Add the following to your project's `deps`.
 
 ```
-[yieldbot/marceline "0.2.1"]
+[yieldbot/marceline "0.2.2"]
 ```
 
 Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.5.1`.
