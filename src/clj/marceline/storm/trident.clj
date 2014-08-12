@@ -437,8 +437,8 @@
 (defn debug
   [stream & [name]]
   (condp isa? (class stream)
-    GroupedStream (debug (.toStream stream))
-    TridentState (do (debug (.newValuesStream stream)) stream)
+    GroupedStream (debug (.toStream stream) name)
+    TridentState (do (debug (.newValuesStream stream) name) stream)
     (.each stream
            (.getOutputFields stream)
            (if (not (nil? name))
