@@ -235,7 +235,7 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
 
 To use `state-query`, we need to pass it a source of state. In this case, we're using the `TridentState` returned by the `persistent-aggregate` function as our source of state. We pass `state-query` the name of the field that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
 
-### Querying the DRPC topoology
+### Querying the DRPC topology
 
 Now we need a way to start our topology, submit some words to count, and query using DRPC. In this example, we're using the `mk-fixed-batch-spout` fn that we defined earlier, and
 the `build-topology` function above.
