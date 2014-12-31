@@ -102,7 +102,7 @@
                        spout
                        local-drpc)))
     (Thread/sleep 10000)
-    (.execute local-drpc "words" "cat dog the man jumped")
+    (println "DRPC query: " (.execute local-drpc "words" "cat dog the man jumped"))
     (.shutdown cluster)
     (System/exit 0)))
 
