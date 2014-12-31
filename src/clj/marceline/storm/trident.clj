@@ -437,7 +437,10 @@
 (defn debug
   [stream & [name]]
   (condp isa? (class stream)
-    GroupedStream (debug (.toStream stream) name)
+    GroupedStream
+    (let [grouped-fields (.getGroupFields stream)]
+      (.groupBy (debug (.toStream stream) name)
+                grouped-fields))
     TridentState (do (debug (.newValuesStream stream) name) stream)
     (.each stream
            (.getOutputFields stream)
