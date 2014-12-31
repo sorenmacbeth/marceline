@@ -8,5 +8,5 @@
   :java-source-paths ["src/jvm"]
   :javac-options ["-source" "1.6" "-target" "1.6"]
   :profiles {:provided {:dependencies
-                        [[org.apache.storm/storm-core "0.9.2-incubating"]
+                        [[org.apache.storm/storm-core "0.9.3"]
                          [org.clojure/clojure "1.5.1"]]}})
