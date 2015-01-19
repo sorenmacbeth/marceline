@@ -367,11 +367,17 @@
   (.batchGlobal stream))
 
 (defn partition-persist
-  [stream state-spec in-fields state-updater]
-  (.partitionPersist stream
-                     state-spec
-                     (apply fields in-fields)
-                     state-updater))
+  ([stream state-spec in-fields state-updater]
+    (.partitionPersist stream
+                       state-spec
+                       (apply fields in-fields)
+                       state-updater))
+  ([stream state-spec in-fields state-updater out-fields]
+    (.partitionPersist stream
+                       state-spec
+                       (apply fields in-fields)
+                       state-updater
+                       (apply fields out-fields))))
 
 (defn persistent-aggregate
   ([stream state fn-inst fn-fields]
