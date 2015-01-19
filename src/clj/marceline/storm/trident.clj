@@ -441,13 +441,18 @@
   (.name stream name-str))
 
 (defn debug
-  [stream]
+  [stream & [name]]
   (condp isa? (class stream)
-    GroupedStream (debug (.toStream stream))
-    TridentState (do (debug (.newValuesStream stream)) stream)
+    GroupedStream
+    (let [grouped-fields (.getGroupFields stream)]
+      (.groupBy (debug (.toStream stream) name)
+                grouped-fields))
+    TridentState (do (debug (.newValuesStream stream) name) stream)
     (.each stream
            (.getOutputFields stream)
-           (Debug.))))
+           (if (not (nil? name))
+             (Debug. name)
+             (Debug.)))))
 
 (defn broadcast
   [stream]

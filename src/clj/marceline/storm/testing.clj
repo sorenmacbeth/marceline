@@ -6,10 +6,13 @@
            [marceline.storm.trident ClojureTridentTuple]
            [storm.trident.testing
             MemoryMapState$Factory
-            LRUMemoryMapState$Factory MockTridentTuple]
+            LRUMemoryMapState$Factory]
            [storm.trident.operation.impl CaptureCollector]
            [storm.trident.operation TridentOperationContext]
-           [storm.trident.tuple TridentTupleView$RootFactory TridentTuple$Factory]
+           [storm.trident.tuple
+            TridentTupleView
+            TridentTupleView$RootFactory
+            TridentTuple$Factory]
            [backtype.storm.tuple Fields]
            [backtype.storm.task TopologyContext]))
 
@@ -34,9 +37,9 @@
   "Create a new mock trident tuple. Field values should come in the format of field, value, field value. e.g:
    (new-mocj-tuple :a \"a-value\" :b \"b-value\" :c \"c what I did there?\")"
   [& args]
-  (let [fields (map name (take-nth 2 args))
+  (let [fields (apply trident/fields (map name (take-nth 2 args)))
         values (take-nth 2 (rest args))]
-    (MockTridentTuple. fields values)))
+    (TridentTupleView/createFreshTuple fields values)))
 
 (defn- new-nil-context
   "Creates a TridentOperationContext with nil topology and tuple factory for testing."
@@ -90,26 +93,3 @@
      :zero         (.zero aggregator)
      :combine      (.combine aggregator (.init aggregator mtuple1) (.init aggregator mtuple2))
      :combine-zero (.combine aggregator (.init aggregator mtuple1) (.zero aggregator))}))
-
-(extend-type MockTridentTuple
-  trident/ClojureTridentTuple
-  (first
-    [this]
-    (.getValue ^MockTridentTuple this 0))
-  (count
-    [this]
-    (.size ^MockTridentTuple this))
-  (get
-    ([this field]
-     (.getValueByField ^MockTridentTuple this (name field)))
-    ([this field not-found]
-     (or (.getValueByField ^MockTridentTuple this (name field))
-         not-found)))
-  (nth
-    ([this index]
-     (.getValue ^MockTridentTuple this index))
-    ([this index not-found]
-     (or (.getValue ^MockTridentTuple this index)
-         not-found)))
-  (vals [this]
-    (.getValues ^MockTridentTuple this)))

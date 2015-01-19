@@ -4,6 +4,17 @@
             [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
   (:gen-class))
 
+(defn register-consumer
+  [conf class-or-classname & [parallelism arg]]
+  (merge-with
+   concat
+   conf
+   {TOPOLOGY-METRICS-CONSUMER-REGISTER
+    [{"class" (condp isa? (class class-or-classname)
+                java.lang.Class (.getName class-or-classname)
+                java.lang.String class-or-classname)
+      "parallelism.hint" parallelism
+      "argument" arg}]}))
 
 (defmacro defmetricsconsumer
   [name & [opts & impl :as all]]
@@ -35,13 +46,7 @@
            ~@cleanup-impl)
          (def ~name
            (fn [conf# & [arg#]]
-             (merge-with
-              concat
-              conf#
-              {~TOPOLOGY-METRICS-CONSUMER-REGISTER
-               [{"class" ~classname
-                 "parallelism.hint" ~parallelism
-                 "argument" arg#}]})))))))
+             (register-consumer conf# ~classname ~parallelism arg#)))))))
 
 ;; I don't see the value of this argument
 ;; it's passed during `prepare`, which

@@ -16,6 +16,7 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [DRPC Topologies](#drpc)
 * [Parallelism and Tuning](#parallelism)
 * [Metrics](#metrics)
+* [Reading](#reading)
 * [Terminology](#terminology)
 
 <a name="overview">
@@ -33,8 +34,10 @@ Ready? Grab your willing vessel, and let's do this!
 Marceline is available from clojars. Add the following to your project's `deps`.
 
 ```
-[yieldbot/marceline "0.2.0"]
+[yieldbot/marceline "0.2.1"]
 ```
+
+Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.5.1`.
 
 <a name="streams">
 ## Streams
@@ -45,7 +48,8 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
 
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t]))
+  (:require [marceline.storm.trident :as t])
+  (:import [storm.trident.testing FixedBatchSpout]))
 
 (defn mk-fixed-batch-spout [max-batch-size]
   (FixedBatchSpout.
@@ -54,7 +58,7 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
    max-batch-size
    (into-array (map t/values '("lord ogdoad"
                                "master of level eight shadow world"
-                               "the willing vessel offers forth its pure essence")
+                               "the willing vessel offers forth its pure essence")))))
 ```
 
 This function returns a [spout](#terminology), that can be used to create a new [stream](#terminology) for the topology.
@@ -62,9 +66,7 @@ This function returns a [spout](#terminology), that can be used to create a new 
 You can add this stream to your topology by calling that function along with  Marcie's `new-stream` function like so:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology]))
+(import '[storm.trident TridentTopology])
 
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
@@ -82,9 +84,7 @@ Trident functions accept tuples from streams or other functions as input, and em
 after performing some processing on them:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
- (:require [marceline.storm.trident :as t]
-           [clojure.string :as string :only [split]]))
+(require '[clojure.string :as string :only [split]])
 
 (t/deftridentfn split-args
   [tuple coll]
@@ -100,10 +100,6 @@ by calling `emit-fn` on the `AppendCollector` that gets passed into the function
 Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the output field as `word`:
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology]))
-
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
         spout (doto (mk-fixed-batch-spout 3)
@@ -129,10 +125,6 @@ Marceline allows you to group and partition streams of tuples. In our `level-eig
 ### Group by
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology]))
-
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
         spout (doto (mk-fixed-batch-spout 3)
@@ -180,11 +172,7 @@ We'll use our `count-words` function in the next section.
 To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as its first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running. `MemoryMapState` stores data behind the scenes in a `java.util.concurrent.ConcurrentHashMap` that we can use to simulate a persistent k/v store.
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.TridentTopology
-           [storm.trident.testing MemoryMapState$Factory
-            FixedBatchSpout]]))
+(import '[storm.trident.testing MemoryMapState$Factory])
 
 (defn build-topology []
   (let [word-state-factory (MemoryMapState$Factory.)
@@ -214,15 +202,12 @@ Now that we're storing state, we need a way to query our topology. To do that, w
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`. For remote topology submission, just use `nil` instead of the `LocalDRPC`.
 
 ```clojure
-(ns com.black.magic.level-eight-evil-topology
-  (:require [marceline.storm.trident :as t]
-  (:import [backtype.storm LocalDRPC]
-           [storm.trident.operation.builtin
-            MapGet])))
+(import '[backtype.storm LocalDRPC]
+        '[storm.trident.operation.builtin MapGet])
 
-(defn build-topology []
-  (let [trident-topology (TridentTopology.)
-        drpc (LocalDRPC.)
+(defn build-topology [spout drpc]
+  (let [word-state-factory (MemoryMapState$Factory.)
+       trident-topology (TridentTopology.)
         ;; Here we build our usual word count topology
         word-counts (-> (t/new-stream trident-topology "word-counts" spout)
                         (t/each ["sentence"]
@@ -250,13 +235,15 @@ In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and queryin
 
 To use `state-query`, we need to pass it a source of state. In this case, we're using the `TridentState` returned by the `persistent-aggregate` function as our source of state. We pass `state-query` the name of the field that we're querying on `["word"]`, and a built-in Trident operation `MapGet`, that will emit the count for each word.
 
-### Querying the DRPC topoology
+### Querying the DRPC topology
 
 Now we need a way to start our topology, submit some words to count, and query using DRPC. In this example, we're using the `mk-fixed-batch-spout` fn that we defined earlier, and
 the `build-topology` function above.
 
 ```clojure
-(defn run-local! []
+(import '[backtype.storm LocalCluster])
+
+(defn run-local! [drpc-words]
   (let [cluster (LocalCluster.)
         local-drpc (LocalDRPC.)
         spout (doto (mk-fixed-batch-spout 3)
@@ -268,10 +255,22 @@ the `build-topology` function above.
                        spout
                        local-drpc)))
     (Thread/sleep 10000)
-    (.execute local-drpc "words" "evil vessel ogdoad")
-    (.shutdown cluster)
-    (System/exit 0)))
+    (let [results (.execute local-drpc "words" drpc-words)]
+        (.shutdown cluster)
+        results)))
 ```
+
+You can run this function and see it's outputs like this:
+
+```clojure
+(def results (run-local! "evil vessel ogdoad"))
+;; storm will output a lot of messages
+results
+;; ==> [["evil", null] ["vessel", 172] ["ogdoad", 172]] 
+
+```
+
+**evil** is null because it doesn't appear in the the [fixed batch spout's array of values](#streams).  **vessel** and **ogdoad** do appear and thus they have a count.  The specific count will likely be slightly different on every run.
 
 <a name="parallelism">
 ## Parallelism and Tuning
@@ -364,6 +363,15 @@ Consider this example, which reports every minute.
 This macro binds the symbols, which will also be used as the `name` when registering with Storm, to values that are functions for updating metrics. The bound metrics are automatically defined and registered.
 
 Using `:count` or `:multi-count` specifies Storm's builtin `CountMetric` or `MultiCountMetric`, respectively. The value may also be a custom metric defined with `defmetric`, as above. The example `defmetric` is a re-implementation of `CountMetric`. The arguments to `defmetric` are simply an initial value and function to be used for updating the value.
+
+<a name="reading">
+## Reading
+There have been several blog posts related to marceline. Please PR to add any posts that aren't already here!
+
++ ["Marceline, the finer points"](http://derek.troywest.com/articles/finer-points-marceline/) by @d-t-w
++ ["Marceline's Instruments"](http://yieldbot.com/blog/marcelines-instruments) by @strongh
++ ["Say Hello to Marceline"](http://yieldbot.com/blog/say-hello-to-marceline-clojure-trident-dsl) by @sorenmacbeth
+
 
 <a name="terminology">
 ## Terminology
