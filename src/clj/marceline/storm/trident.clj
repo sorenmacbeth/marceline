@@ -15,7 +15,8 @@
             ClojureQueryFunction
             ClojureStateUpdater
             ClojureStateFactory
-            ClojureBackingMap])
+            ClojureBackingMap
+            ClojureInstrumentedMap])
   (:require [backtype.storm.clojure :refer (to-spec normalize-fns)])
   (:refer-clojure :exclude [group-by get nth vals
                             first count partition-by shuffle filter merge])
@@ -322,12 +323,45 @@
             (~'multiPut ~(vec put-args) ~@put-body)))
          ~definer))))
 
+;; ## instrumentedmap
+(defn clojure-instrumented-map* [fn-var args]
+  (ClojureInstrumentedMap. (to-spec fn-var) args))
+
+(defmacro clojure-instrumented-map [fn-sym args]
+  `(clojure-instrumented-map* (var ~fn-sym) ~args))
+
+(defmacro instrumented-map [& body]
+  (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
+        fns (normalize-fns base-fns)]
+    `(reify marceline.storm.trident.state.map.IInstrumentedMap
+       ~@fns)))
+
+(defmacro definstrumentedmap [name & [opts & [get-impl put-impl instrument-impl] :as all]]
+  (if-not (map? opts)
+    `(definstrumentedmap ~name {} ~@all)
+    (let [params (:params opts)
+          fn-name (symbol (str name "__"))
+          [get-args & get-body] get-impl
+          [put-args & put-body] put-impl
+          [instrument-args & instrument-body] instrument-impl
+          definer (if params
+                    `(defn ~name [& args#]
+                       (clojure-instrumented-map ~fn-name args#))
+                    `(def ~name
+                       (clojure-instrumented-map ~fn-name [])))]
+      `(do
+         (defn ~fn-name ~(if params params [])
+           (instrumented-map
+            (~'multiGet ~(vec get-args) ~@get-body)
+            (~'multiPut ~(vec put-args) ~@put-body)
+            (~'instrument ~(vec instrument-args) ~@instrument-body)))
+         ~definer))))
+
 (defn values [& v]
   (Values. (into-array Object v)))
 
 (defn fields [& v]
   (Fields. (into-array String (map name v))))
-
 
 ;; for use in defbasefn
 (defn emit-fn
