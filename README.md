@@ -376,11 +376,11 @@ There have been several blog posts related to marceline. Please PR to add any po
 <a name="terminology">
 ## Terminology
 
-* **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](https://github.com/nathanmarz/storm/wiki/Trident-spouts).
-* **function**: A Trident function takes in a set of input fields, and emits zero or more tuples as output. See the [Trident docs](https://github.com/nathanmarz/storm/wiki/Trident-API-Overview#functions) for more information.
+* **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](http://storm.apache.org/documentation/Trident-spouts.html).
+* **function**: A Trident function takes in a set of input fields, and emits zero or more tuples as output. See the [Trident docs](http://storm.apache.org/documentation/Trident-API-Overview.html) for more information.
 * **stream**: A stream is an unending sequence of batches that are emitted from a spout.
 * **field**: A field is a named tuple in a trident topology. Streams can consist of multiple fields.
-* **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](https://github.com/nathanmarz/storm/wiki/Trident-state#transactional-spouts)
+* **batch**: Tuples are emitted in batches into the topology, for more information see the batching section of the [Trident tutorial](http://storm.apache.org/documentation/Trident-state.html)
 * **partition**: Tuples in a Trident batch can be partitioned into logical, or randomly distributed subsets of batches of tuples for distribution to workers in a topology.
 * **state**: Trident and Marceline provide support for reading and writing the result of processing to sources of state. The state can be internal to the topology (in memory), or stored externally in a database.
-* **DRPC**: DRPC stands for Distributed Remote Procedure Call. For more info, see [Distributed RPC](https://github.com/nathanmarz/storm/wiki/Distributed-RPC).
+* **DRPC**: DRPC stands for Distributed Remote Procedure Call. For more info, see [Distributed RPC](http://storm.apache.org/documentation/Distributed-RPC.html).
