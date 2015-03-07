@@ -1,9 +1,9 @@
 package marceline.storm.trident.state.map;
 
-import backtype.storm.task.IMetricsContext;
-import storm.trident.state.map.IBackingMap;
-import java.util.Map;
+import backtype.storm.metric.api.CountMetric;
+import java.util.List;
 
-public interface IInstrumentedMap<T> extends IBackingMap<T> {
-  void instrument(Map conf, IMetricsContext metrics);
+public interface IInstrumentedMap<T> {
+  List<T> multiGet(List<List<Object>> keys, CountMetric readsCount);
+  void multiPut(List<List<Object>> keys, List<T> vals, CountMetric writesCount);
 }
