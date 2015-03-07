@@ -1,6 +1,7 @@
 package marceline.storm.trident.clojure;
 
 import backtype.storm.task.IMetricsContext;
+import backtype.storm.metric.api.CountMetric;
 import backtype.storm.utils.Utils;
 import marceline.storm.trident.state.map.IInstrumentedMap;
 import clojure.lang.IFn;
@@ -14,6 +15,10 @@ public class ClojureInstrumentedMap implements IInstrumentedMap<Object> {
   List<Object> _params;
   List<String> _fnSpec;
   IInstrumentedMap _instrumentedMap;
+
+  CountMetric _mreads;
+  CountMetric _mwrites;
+
 
   public ClojureInstrumentedMap(List fnSpec, List<Object> params) {
     _params = params;
@@ -29,16 +34,19 @@ public class ClojureInstrumentedMap implements IInstrumentedMap<Object> {
 
   @Override
   public List<Object> multiGet(List<List<Object>> keys) {
-    return _instrumentedMap.multiGet(keys);
+    return _instrumentedMap.multiGet(keys, _mreads);
   }
 
   @Override
   public void multiPut(List<List<Object>> keys, List<Object> vals) {
-    _instrumentedMap.multiPut(keys, vals);
+    _instrumentedMap.multiPut(keys, vals, _mwrites);
   }
 
   @Override
-  public void instrument(Map conf, IMetricsContext metrics) {
-    _instrumentedMap.instrument(conf, metrics);
+  public void instrument(Map conf, IMetricsContext metrics, String mapStateMetricName, int bucketSize) {
+    String metricBaseName = "hambo/" + mapStateMetricName;
+    _mreads = context.registerMetric(metricBaseName + "/read-count", new CountMetric(), bucketSize);
+    _mwrites = context.registerMetric(metricBaseName + "/write-count", new CountMetric(), bucketSize);
+    // _instrumentedMap.instrument(conf, metrics);
   }
 }
