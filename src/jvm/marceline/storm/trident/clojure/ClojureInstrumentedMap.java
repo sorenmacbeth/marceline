@@ -18,8 +18,8 @@ public class ClojureInstrumentedMap implements IBackingMap<Object> {
   List<String> _fnSpec;
   IInstrumentedMap _instrumentedMap;
 
-  MultiCountMetric _mreads;
-  MultiCountMetric _mwrites;
+  transient MultiCountMetric _mreads;
+  transient MultiCountMetric _mwrites;
 
 
   public ClojureInstrumentedMap(List fnSpec, List<Object> params) {
