@@ -336,14 +336,13 @@
     `(reify marceline.storm.trident.state.map.IInstrumentedMap
        ~@fns)))
 
-(defmacro definstrumentedmap [name & [opts & [get-impl put-impl instrument-impl] :as all]]
+(defmacro definstrumentedmap [name & [opts & [get-impl put-impl] :as all]]
   (if-not (map? opts)
     `(definstrumentedmap ~name {} ~@all)
     (let [params (:params opts)
           fn-name (symbol (str name "__"))
           [get-args & get-body] get-impl
           [put-args & put-body] put-impl
-          [instrument-args & instrument-body] instrument-impl
           definer (if params
                     `(defn ~name [& args#]
                        (clojure-instrumented-map ~fn-name args#))
@@ -353,8 +352,7 @@
          (defn ~fn-name ~(if params params [])
            (instrumented-map
             (~'multiGet ~(vec get-args) ~@get-body)
-            (~'multiPut ~(vec put-args) ~@put-body)
-            (~'instrument ~(vec instrument-args) ~@instrument-body)))
+            (~'multiPut ~(vec put-args) ~@put-body)))
          ~definer))))
 
 (defn values [& v]

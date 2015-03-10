@@ -2,6 +2,7 @@ package marceline.storm.trident.clojure;
 
 import backtype.storm.task.IMetricsContext;
 import backtype.storm.metric.api.CountMetric;
+import backtype.storm.metric.api.MultiCountMetric
 import backtype.storm.utils.Utils;
 import marceline.storm.trident.state.map.IInstrumentedMap;
 import storm.trident.state.map.IBackingMap;
@@ -42,9 +43,7 @@ public class ClojureInstrumentedMap implements IBackingMap<Object> {
   }
 
   public void registerMetrics(Map conf, IMetricsContext context, String mapStateMetricName, int bucketSize) {
-    String metricBaseName = "hambo/" + mapStateMetricName;
-    _mreads = context.registerMetric(metricBaseName + "/read-count", new CountMetric(), bucketSize);
-    _mwrites = context.registerMetric(metricBaseName + "/write-count", new CountMetric(), bucketSize);
-    // _instrumentedMap.instrument(conf, metrics);
+    _mreads = context.registerMetric(mapStateMetricName + "/read-count", new MultiCountMetric(), bucketSize);
+    _mwrites = context.registerMetric(mapStateMetricName + "/write-count", new MultiCountMetric(), bucketSize);
   }
 }
