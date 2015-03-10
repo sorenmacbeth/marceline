@@ -2,7 +2,7 @@ package marceline.storm.trident.clojure;
 
 import backtype.storm.task.IMetricsContext;
 import backtype.storm.metric.api.CountMetric;
-import backtype.storm.metric.api.MultiCountMetric
+import backtype.storm.metric.api.MultiCountMetric;
 import backtype.storm.utils.Utils;
 import marceline.storm.trident.state.map.IInstrumentedMap;
 import storm.trident.state.map.IBackingMap;
@@ -18,8 +18,8 @@ public class ClojureInstrumentedMap implements IBackingMap<Object> {
   List<String> _fnSpec;
   IInstrumentedMap _instrumentedMap;
 
-  CountMetric _mreads;
-  CountMetric _mwrites;
+  MultiCountMetric _mreads;
+  MultiCountMetric _mwrites;
 
 
   public ClojureInstrumentedMap(List fnSpec, List<Object> params) {
