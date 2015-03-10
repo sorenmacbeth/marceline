@@ -43,7 +43,7 @@ public class ClojureInstrumentedMap implements IBackingMap<Object> {
   }
 
   public void registerMetrics(Map conf, IMetricsContext context, String mapStateMetricName, int bucketSize) {
-    _mreads = context.registerMetric(mapStateMetricName + "/read-count", new MultiCountMetric(), bucketSize);
-    _mwrites = context.registerMetric(mapStateMetricName + "/write-count", new MultiCountMetric(), bucketSize);
+    _mreads = context.registerMetric(mapStateMetricName + "/multiGet", new MultiCountMetric(), bucketSize);
+    _mwrites = context.registerMetric(mapStateMetricName + "/multiPut", new MultiCountMetric(), bucketSize);
   }
 }
