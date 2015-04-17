@@ -177,11 +177,13 @@
     `(reify storm.trident.operation.ReducerAggregator
        ~@fns)))
 
-(defmacro defreduceraggregator [name & [opts impl :as all]]
+(defmacro defreduceraggregator [name & [opts & [init-impl reduce-impl] :as all]]
   (if-not (map? opts)
     `(defreduceraggregator ~name {} ~@all)
     (let [params (:params opts)
           fn-name (symbol (str name "__"))
+          [init-args & init-body] init-impl
+          [reduce-args & reduce-body] reduce-impl
           definer (if params
                     `(defn ~name [& args#]
                        (clojure-reducer-aggregator ~fn-name args#))
@@ -189,7 +191,9 @@
                        (clojure-reducer-aggregator ~fn-name [])))]
       `(do
          (defn ~fn-name ~(if params params [])
-           ~impl)
+           (reducer-aggregator
+             (~'init ~(vec init-args) ~@init-body)
+             (~'reduce ~(vec reduce-args) ~@reduce-body)))
          ~definer))))
 
 ;; ## queryfn
