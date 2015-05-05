@@ -18,6 +18,8 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Metrics](#metrics)
 * [Reading](#reading)
 * [Terminology](#terminology)
+* [Support](#support)
+* [License](#license)
 
 <a name="overview">
 ## Overview
@@ -384,3 +386,30 @@ There have been several blog posts related to marceline. Please PR to add any po
 * **partition**: Tuples in a Trident batch can be partitioned into logical, or randomly distributed subsets of batches of tuples for distribution to workers in a topology.
 * **state**: Trident and Marceline provide support for reading and writing the result of processing to sources of state. The state can be internal to the topology (in memory), or stored externally in a database.
 * **DRPC**: DRPC stands for Distributed Remote Procedure Call. For more info, see [Distributed RPC](http://storm.apache.org/documentation/Distributed-RPC.html).
+
+
+<a name="support>
+## Support
+
+YourKit
+
+<img src="http://www.yourkit.com/images/yklogo.png"></img>
+
+YourKit has generously supplied an open source license for their profiler
+to improve the performance of Marceline.
+
+YourKit supports open source projects with its full-featured Java
+Profiler.  YourKit, LLC is the creator of <a
+href="http://www.yourkit.com/java/profiler/index.jsp">YourKit Java
+Profiler</a> and <a
+href="http://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET
+Profiler</a>, innovative and intelligent tools for profiling Java and
+.NET applications.
+
+<a name="license">
+## License
+
+Copyright © 2014,2015 Yieldbot, Inc.
+
+Distributed under the Eclipse Public License either version 1.0 or (at
+your option) any later version.
