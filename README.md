@@ -268,7 +268,7 @@ You can run this function and see it's outputs like this:
 (def results (run-local! "evil vessel ogdoad"))
 ;; storm will output a lot of messages
 results
-;; ==> [["evil", null] ["vessel", 172] ["ogdoad", 172]] 
+;; ==> [["evil", null] ["vessel", 172] ["ogdoad", 172]]
 
 ```
 
@@ -372,7 +372,7 @@ There have been several blog posts related to marceline. Please PR to add any po
 
 + ["Marceline, the finer points"](http://derek.troywest.com/articles/finer-points-marceline/) by @d-t-w
 + ["Marceline's Instruments"](http://yieldbot.com/blog/marcelines-instruments) by @strongh
-+ ["Say Hello to Marceline"](http://yieldbot.com/blog/say-hello-to-marceline-clojure-trident-dsl) by @sorenmacbeth
++ ["Say Hello to Marceline"](http://yieldbot.com/blog/say-hello-to-marceline/) by @sorenmacbeth
 
 
 <a name="terminology">
