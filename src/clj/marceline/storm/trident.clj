@@ -415,6 +415,18 @@
                        state-updater
                        (apply fields out-fields))))
 
+(defn partition-aggregate
+  ([stream agg fn-fields]
+   (.partitionAggregate stream
+                        agg
+                        (apply fields fn-fields)))
+  ([stream in-fields agg fn-fields]
+   (.partitionAggregate stream
+                        (apply fields in-fields)
+                        agg
+                        (apply fields fn-fields))))
+
+
 (defn persistent-aggregate
   ([stream state fn-inst fn-fields]
      (.persistentAggregate stream
