@@ -394,6 +394,10 @@
   [stream group-fields]
   (.groupBy stream (apply fields group-fields)))
 
+(defn to-stream
+  [stream]
+  (.toStream stream))
+
 (defn partition-by
   [stream group-fields]
   (.partitionBy stream (apply fields group-fields)))
