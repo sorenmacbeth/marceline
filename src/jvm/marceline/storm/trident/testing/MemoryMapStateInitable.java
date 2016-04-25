@@ -1,17 +1,17 @@
-package storm.trident.testing;
+package marceline.storm.trident.testing;
 
-import backtype.storm.task.IMetricsContext;
-import storm.trident.state.ITupleCollection;
-import backtype.storm.tuple.Values;
+import org.apache.storm.task.IMetricsContext;
+import org.apache.storm.trident.state.ITupleCollection;
+import org.apache.storm.tuple.Values;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import storm.trident.state.OpaqueValue;
-import storm.trident.state.State;
-import storm.trident.state.StateFactory;
-import storm.trident.state.ValueUpdater;
-import storm.trident.state.map.*;
-import storm.trident.state.snapshot.Snapshottable;
+import org.apache.storm.trident.state.OpaqueValue;
+import org.apache.storm.trident.state.State;
+import org.apache.storm.trident.state.StateFactory;
+import org.apache.storm.trident.state.ValueUpdater;
+import org.apache.storm.trident.state.map.*;
+import org.apache.storm.trident.state.snapshot.Snapshottable;
 
 public class MemoryMapStateInitable<T> implements Snapshottable<T>, ITupleCollection, MapState<T> {
 

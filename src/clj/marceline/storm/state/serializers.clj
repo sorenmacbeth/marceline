@@ -1,5 +1,5 @@
 (ns marceline.storm.state.serializers
-  (:import [storm.trident.state
+  (:import [org.apache.storm.trident.state
             JSONOpaqueSerializer
             JSONNonTransactionalSerializer
             JSONTransactionalSerializer]))

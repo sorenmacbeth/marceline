@@ -1,7 +1,7 @@
 (ns marceline.topology.tfidf-test
-  (:require [backtype.storm.testing :as t])
+  (:require [org.apache.storm.testing :as t])
   (:use clojure.test
-        storm.trident.testing
+        org.apache.storm.trident.testing
         marceline.topology.tfidf))
 
 (def DOCUMENTS [["twitter" "0" "a b c d"]
@@ -14,7 +14,7 @@
     (with-drpc [drpc]
       (let [feeder (feeder-spout ["source" "doc-id" "terms"])
             topology (build-topology feeder drpc)]
-        (with-topology [cluster topology]
+        (with-topology [cluster topology wordcount-topology]
           (feed feeder DOCUMENTS)
           (testing "must return correct tfidf value"
             (is (= (exec-drpc drpc "tfidf" "twitter 3 a")

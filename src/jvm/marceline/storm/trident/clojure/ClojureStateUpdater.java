@@ -1,11 +1,11 @@
 package marceline.storm.trident.clojure;
 
-import backtype.storm.utils.Utils;
-import storm.trident.state.State;
-import storm.trident.state.StateUpdater;
-import storm.trident.operation.TridentCollector;
-import storm.trident.operation.TridentOperationContext;
-import storm.trident.tuple.TridentTuple;
+import org.apache.storm.utils.Utils;
+import org.apache.storm.trident.state.State;
+import org.apache.storm.trident.state.StateUpdater;
+import org.apache.storm.trident.operation.TridentCollector;
+import org.apache.storm.trident.operation.TridentOperationContext;
+import org.apache.storm.trident.tuple.TridentTuple;
 import clojure.lang.IFn;
 import clojure.lang.RT;
 

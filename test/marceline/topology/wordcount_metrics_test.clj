@@ -1,9 +1,9 @@
 (ns marceline.topology.wordcount-metrics-test
-  (:require [backtype.storm.testing :as t]
+  (:require [org.apache.storm.testing :as t]
             [marceline.storm.metrics.consumers :as m])
   (:use clojure.test
-        backtype.storm.config
-        storm.trident.testing
+        org.apache.storm.config
+        org.apache.storm.trident.testing
         marceline.storm.testing
         marceline.topology.wordcount-metrics))
 

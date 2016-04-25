@@ -1,7 +1,7 @@
 package marceline.storm.trident.clojure;
 
-import backtype.storm.utils.Utils;
-import storm.trident.state.map.IBackingMap;
+import org.apache.storm.utils.Utils;
+import org.apache.storm.trident.state.map.IBackingMap;
 import clojure.lang.IFn;
 import clojure.lang.RT;
 

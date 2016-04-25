@@ -1,11 +1,11 @@
 (ns marceline.topology.wordcount
-  (:import storm.trident.TridentTopology
-           [storm.trident.operation.builtin MapGet]
-           [storm.trident.testing MemoryMapState$Factory FixedBatchSpout]
-           [backtype.storm LocalDRPC LocalCluster StormSubmitter])
+  (:import org.apache.storm.trident.TridentTopology
+           [org.apache.storm.trident.operation.builtin MapGet]
+           [org.apache.storm.trident.testing MemoryMapState$Factory FixedBatchSpout]
+           [org.apache.storm LocalDRPC LocalCluster StormSubmitter])
   (:require [marceline.storm.trident :as t]
             [clojure.string :as string :only [split]])
-  (:use [backtype.storm config])
+  (:use [org.apache.storm config])
   (:gen-class))
 
 (defn mk-fixed-batch-spout [max-batch-size]

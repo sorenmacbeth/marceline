@@ -1,11 +1,11 @@
 package marceline.storm.trident.clojure;
 
-import backtype.storm.task.IMetricsContext;
-import backtype.storm.metric.api.CountMetric;
-import backtype.storm.metric.api.MultiCountMetric;
-import backtype.storm.utils.Utils;
+import org.apache.storm.task.IMetricsContext;
+import org.apache.storm.metric.api.CountMetric;
+import org.apache.storm.metric.api.MultiCountMetric;
+import org.apache.storm.utils.Utils;
 import marceline.storm.trident.state.map.IInstrumentedMap;
-import storm.trident.state.map.IBackingMap;
+import org.apache.storm.trident.state.map.IBackingMap;
 import clojure.lang.IFn;
 import clojure.lang.RT;
 
