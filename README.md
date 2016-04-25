@@ -36,10 +36,10 @@ Ready? Grab your willing vessel, and let's do this!
 Marceline is available from clojars. Add the following to your project's `deps`.
 
 ```
-[yieldbot/marceline "0.2.1"]
+[yieldbot/marceline "0.2.3-SNAPSHOT"]
 ```
 
-Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.5.1`.
+Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.7.0`.
 
 <a name="streams">
 ## Streams
@@ -51,7 +51,7 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
 ```clojure
 (ns com.black.magic.level-eight-evil-topology
   (:require [marceline.storm.trident :as t])
-  (:import [storm.trident.testing FixedBatchSpout]))
+  (:import [org.apache.storm.trident.testing FixedBatchSpout]))
 
 (defn mk-fixed-batch-spout [max-batch-size]
   (FixedBatchSpout.
@@ -65,10 +65,10 @@ In this example, we're using a `FixedBatchSpout` that will emit an infinite stre
 
 This function returns a [spout](#terminology), that can be used to create a new [stream](#terminology) for the topology.
 
-You can add this stream to your topology by calling that function along with  Marcie's `new-stream` function like so:
+You can add this stream to your topology by calling that function along with Marcie's `new-stream` function like so:
 
 ```clojure
-(import '[storm.trident TridentTopology])
+(import '[org.apache.storm.trident TridentTopology])
 
 (defn build-topology []
   (let [trident-topology (TridentTopology.)
@@ -82,8 +82,7 @@ Once you've done that, new `sentence` tuples will be emitted into the topology.
 <a name="functions">
 ## Functions
 
-Trident functions accept tuples from streams or other functions as input, and emit new tuples into the topology
-after performing some processing on them:
+Trident functions accept tuples from streams or other functions as input, and emit new tuples into the topology after performing some processing on them:
 
 ```clojure
 (require '[clojure.string :as string :only [split]])
@@ -96,8 +95,9 @@ after performing some processing on them:
         (t/emit-fn coll word)))))
 ```
 
-`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a Trident [function](#terminology) `split-args` that takes a tuple, and emits a new tuple into the topology for each `word` in the sentence
-by calling `emit-fn` on the `AppendCollector` that gets passed into the function.
+`deftridentfn` accepts a tuple, and the `AppendCollector` for your topology. `deftridentfn` defines a Trident [function](#terminology) called `split-args` that takes a tuple, and emits a new tuple into the topology for each `word` in the sentence
+by calling `emit-fn` on the `AppendCollector` that gets passed into the function by
+Trident.
 
 Here, we add the `split-args` function we just defined for each `sentence` tuple emitted into the topology, and define the output field as `word`:
 
@@ -115,8 +115,7 @@ Here, we add the `split-args` function we just defined for each `sentence` tuple
 <a name="project">
 ## Project
 
-`project` keeps only the [fields](#terminology) you specify from being emitted further into the topology. If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])`
-the output stream only contains the `word` field.
+`project` keeps only the [fields](#terminology) you specify from being emitted further into the topology. If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])` the output stream only contains the `word` field.
 
 <a name="grouping">
 ## Grouping and Partitioning Streams
@@ -174,7 +173,7 @@ We'll use our `count-words` function in the next section.
 To store these word counts, we need to update a source of state. `persistent-aggregate` takes a [state](#terminology) factory as its first argument. In this case, we'll use one provided for us in the `storm.trident.testing` namespace to store the results of these counts in memory while the topology is running. `MemoryMapState` stores data behind the scenes in a `java.util.concurrent.ConcurrentHashMap` that we can use to simulate a persistent k/v store.
 
 ```clojure
-(import '[storm.trident.testing MemoryMapState$Factory])
+(import '[org.apache.storm.trident.testing MemoryMapState$Factory])
 
 (defn build-topology []
   (let [word-state-factory (MemoryMapState$Factory.)
@@ -204,8 +203,8 @@ Now that we're storing state, we need a way to query our topology. To do that, w
 In our `level-eight-evil-topology`, we'll be creating a `LocalDRPC`, and querying our stateful topology in-process using Marceline's `state-query`. For remote topology submission, just use `nil` instead of the `LocalDRPC`.
 
 ```clojure
-(import '[backtype.storm LocalDRPC]
-        '[storm.trident.operation.builtin MapGet])
+(import '[org.apache.storm LocalDRPC]
+        '[org.apache.storm.trident.operation.builtin MapGet])
 
 (defn build-topology [spout drpc]
   (let [word-state-factory (MemoryMapState$Factory.)
@@ -243,7 +242,8 @@ Now we need a way to start our topology, submit some words to count, and query u
 the `build-topology` function above.
 
 ```clojure
-(import '[backtype.storm LocalCluster])
+(import '[org.apache.storm LocalCluster]
+        '[org.apache.storm LocalDRPC])
 
 (defn run-local! [drpc-words]
   (let [cluster (LocalCluster.)
@@ -272,7 +272,7 @@ results
 
 ```
 
-**evil** is null because it doesn't appear in the the [fixed batch spout's array of values](#streams).  **vessel** and **ogdoad** do appear and thus they have a count.  The specific count will likely be slightly different on every run.
+**evil** is null because it doesn't appear in the the [fixed batch spout's array of values](#streams).  **vessel** and **ogdoad** do appear and thus they have a count. The specific count will likely be slightly different on every run.
 
 <a name="parallelism">
 ## Parallelism and Tuning
@@ -355,12 +355,12 @@ Consider this example, which reports every minute.
   [wrds :count
    m-wrds :multi-count
    inc-metric (defmetric 0 inc)]
-  (...
+  (…
    (m-wrds "multi-key-to-increment")
    (m-wrds :keywords-work-too)
    (wrds)
    (inc-metric)
-   ...))
+   …))
 ```
 This macro binds the symbols, which will also be used as the `name` when registering with Storm, to values that are functions for updating metrics. The bound metrics are automatically defined and registered.
 
@@ -399,7 +399,7 @@ YourKit has generously supplied an open source license for their profiler
 to improve the performance of Marceline.
 
 YourKit supports open source projects with its full-featured Java
-Profiler.  YourKit, LLC is the creator of <a
+Profiler. YourKit, LLC is the creator of <a
 href="http://www.yourkit.com/java/profiler/index.jsp">YourKit Java
 Profiler</a> and <a
 href="http://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET
