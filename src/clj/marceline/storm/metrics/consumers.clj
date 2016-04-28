@@ -1,12 +1,12 @@
 (ns marceline.storm.metrics.consumers
-  (:import storm.trident.TridentTopology
-           [storm.trident.operation.builtin MapGet]
-           [storm.trident.testing MemoryMapState$Factory FixedBatchSpout]
-           [backtype.storm LocalDRPC LocalCluster StormSubmitter])
+  (:import org.apache.storm.trident.TridentTopology
+           [org.apache.storm.trident.operation.builtin MapGet]
+           [org.apache.storm.trident.testing MemoryMapState$Factory FixedBatchSpout]
+           [org.apache.storm LocalDRPC LocalCluster StormSubmitter])
   (:require [marceline.storm.trident :as t]
             [marceline.storm.metrics :as m]
             [clojure.string :as string :only [split]])
-  (:use [backtype.storm config])
+  (:use [org.apache.storm config])
   (:gen-class))
 
 (m/defmetricsconsumer log-consumer

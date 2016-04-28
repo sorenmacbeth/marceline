@@ -1,20 +1,20 @@
 (ns marceline.storm.testing
-  (:require [backtype.storm [testing :as t]]
+  (:require [org.apache.storm [testing :as t]]
             [marceline.storm.trident :as trident]
             [clojure.reflect :as reflect])
-  (:import [backtype.storm.generated KillOptions]
+  (:import [org.apache.storm.generated KillOptions]
            [marceline.storm.trident ClojureTridentTuple]
-           [storm.trident.testing
+           [org.apache.storm.trident.testing
             MemoryMapState$Factory
             LRUMemoryMapState$Factory]
-           [storm.trident.operation.impl CaptureCollector]
-           [storm.trident.operation TridentOperationContext]
-           [storm.trident.tuple
+           [org.apache.storm.trident.operation.impl CaptureCollector]
+           [org.apache.storm.trident.operation TridentOperationContext]
+           [org.apache.storm.trident.tuple
             TridentTupleView
             TridentTupleView$RootFactory
             TridentTuple$Factory]
-           [backtype.storm.tuple Fields]
-           [backtype.storm.task TopologyContext]))
+           [org.apache.storm.tuple Fields]
+           [org.apache.storm.task TopologyContext]))
 
 
 (defn with-topology-conf* [cluster topo conf body-fn]

@@ -1,8 +1,8 @@
 (ns marceline.topology.reach-test
-  (:import [storm.trident.testing MemoryMapStateInitable$Factory])
-  (:require [backtype.storm.testing :as t])
+  (:import [marceline.storm.trident.testing MemoryMapStateInitable$Factory])
+  (:require [org.apache.storm.testing :as t])
   (:use clojure.test
-        storm.trident.testing
+        org.apache.storm.trident.testing
         marceline.topology.reach))
 
 ;; keys vectors because they are singleton compound keys
@@ -27,7 +27,7 @@
       (let [topology (build-topology (MemoryMapStateInitable$Factory. TWEETERS-DB)
                                      (MemoryMapStateInitable$Factory. FOLLOWERS-DB)
                                      drpc)]
-        (with-topology [cluster topology]
+        (with-topology [cluster topology reach-test]
           (is (= 0
                  (ffirst (exec-drpc drpc
                                     "reach"

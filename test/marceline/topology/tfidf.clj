@@ -1,7 +1,7 @@
 (ns marceline.topology.tfidf
-  (:import storm.trident.TridentTopology
-           [storm.trident.operation.builtin MapGet]
-           [storm.trident.testing MemoryMapState$Factory])
+  (:import org.apache.storm.trident.TridentTopology
+           [org.apache.storm.trident.operation.builtin MapGet]
+           [org.apache.storm.trident.testing MemoryMapState$Factory])
   (:require [marceline.storm.trident :as t]
             [marceline.storm.ops :as o]
             [clojure.string :as string :only [split]])

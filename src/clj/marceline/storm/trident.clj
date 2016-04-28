@@ -1,11 +1,11 @@
 (ns marceline.storm.trident
-  (:import [storm.trident TridentState Stream]
-           [storm.trident.operation.builtin Debug]
-           [storm.trident.tuple TridentTupleView]
-           [storm.trident.fluent GroupedStream]
-           [backtype.storm.tuple Values Fields]
-           [storm.trident.spout RichSpoutBatchExecutor]
-           [backtype.storm.utils RotatingMap TimeCacheMap]
+  (:import [org.apache.storm.trident TridentState Stream]
+           [org.apache.storm.trident.operation.builtin Debug]
+           [org.apache.storm.trident.tuple TridentTupleView]
+           [org.apache.storm.trident.fluent GroupedStream]
+           [org.apache.storm.tuple Values Fields]
+           [org.apache.storm.trident.spout RichSpoutBatchExecutor]
+           [org.apache.storm.utils RotatingMap TimeCacheMap]
            [marceline.storm.trident.clojure
             ClojureFunction
             ClojureFilter
@@ -17,7 +17,7 @@
             ClojureStateFactory
             ClojureBackingMap
             ClojureInstrumentedMap])
-  (:require [backtype.storm.clojure :refer (to-spec normalize-fns)])
+  (:require [org.apache.storm.clojure :refer (to-spec normalize-fns)])
   (:refer-clojure :exclude [group-by get nth vals
                             first count partition-by shuffle filter merge])
   (:gen-class))
@@ -36,7 +36,7 @@
 (defmacro tridentfn [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.operation.Function
+    `(reify org.apache.storm.trident.operation.Function
        ~@fns)))
 
 (defmacro deftridentfn [name & [opts & impl :as all]]
@@ -70,7 +70,7 @@
 (defmacro filter [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.operation.Filter
+    `(reify org.apache.storm.trident.operation.Filter
        ~@fns)))
 
 (defmacro deffilter [name & [opts & impl :as all]]
@@ -104,7 +104,7 @@
 (defmacro aggregator [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.operation.Aggregator
+    `(reify org.apache.storm.trident.operation.Aggregator
        ~@fns)))
 
 (defmacro defaggregator [name & [opts & impl :as all]]
@@ -140,7 +140,7 @@
 (defmacro combiner-aggregator [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.operation.CombinerAggregator
+    `(reify org.apache.storm.trident.operation.CombinerAggregator
        ~@fns)))
 
 (defmacro defcombineraggregator [name & [opts & [zero-impl init-impl combine-impl] :as all]]
@@ -174,7 +174,7 @@
 (defmacro reducer-aggregator [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.operation.ReducerAggregator
+    `(reify org.apache.storm.trident.operation.ReducerAggregator
        ~@fns)))
 
 (defmacro defreduceraggregator [name & [opts & [init-impl reduce-impl] :as all]]
@@ -206,7 +206,7 @@
 (defmacro queryfn [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.state.QueryFunction
+    `(reify org.apache.storm.trident.state.QueryFunction
        ~@fns)))
 
 (defmacro defqueryfn [name & [opts & impl :as all]]
@@ -241,7 +241,7 @@
 (defmacro state-updater [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.state.StateUpdater
+    `(reify org.apache.storm.trident.state.StateUpdater
        ~@fns)))
 
 (defmacro defstateupdater [name & [opts & impl :as all]]
@@ -275,7 +275,7 @@
 (defmacro state-factory [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.state.StateFactory
+    `(reify org.apache.storm.trident.state.StateFactory
        ~@fns)))
 
 (defmacro defstatefactory [name & [opts & impl :as all]]
@@ -305,7 +305,7 @@
 (defmacro backing-map [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify storm.trident.state.map.IBackingMap
+    `(reify org.apache.storm.trident.state.map.IBackingMap
        ~@fns)))
 
 (defmacro defbackingmap [name & [opts & [get-impl put-impl] :as all]]
@@ -337,7 +337,7 @@
 (defmacro instrumented-map [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify marceline.storm.trident.state.map.IInstrumentedMap
+    `(reify org.apache.marceline.storm.trident.state.map.IInstrumentedMap
        ~@fns)))
 
 (defmacro definstrumentedmap [name & [opts & [get-impl put-impl] :as all]]

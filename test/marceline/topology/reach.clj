@@ -1,7 +1,7 @@
 (ns marceline.topology.reach
-  (:import storm.trident.TridentTopology
-           [storm.trident.operation.builtin MapGet Sum]
-           [storm.trident.testing MemoryMapStateInitable$Factory])
+  (:import org.apache.storm.trident.TridentTopology
+           [org.apache.storm.trident.operation.builtin MapGet Sum]
+           [marceline.storm.trident.testing MemoryMapStateInitable$Factory])
   (:require [marceline.storm.trident :as t])
   (:gen-class))
 

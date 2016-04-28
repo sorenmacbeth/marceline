@@ -1,5 +1,5 @@
 (ns marceline.storm.builtin
-  (:import [storm.trident.operation.builtin
+  (:import [org.apache.storm.trident.operation.builtin
             Count Equals FilterNull
             FirstN MapGet Negate
             SnapshotGet Sum

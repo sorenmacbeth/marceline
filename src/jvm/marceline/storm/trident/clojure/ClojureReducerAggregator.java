@@ -1,8 +1,8 @@
 package marceline.storm.trident.clojure;
 
-import backtype.storm.utils.Utils;
-import storm.trident.operation.ReducerAggregator;
-import storm.trident.tuple.TridentTuple;
+import org.apache.storm.utils.Utils;
+import org.apache.storm.trident.operation.ReducerAggregator;
+import org.apache.storm.trident.tuple.TridentTuple;
 import clojure.lang.IFn;
 import clojure.lang.RT;
 

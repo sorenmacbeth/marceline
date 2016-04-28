@@ -1,9 +1,9 @@
 package marceline.storm.trident.clojure;
 
-import backtype.storm.utils.Utils;
-import storm.trident.state.State;
-import storm.trident.state.StateFactory;
-import backtype.storm.task.IMetricsContext;
+import org.apache.storm.utils.Utils;
+import org.apache.storm.trident.state.State;
+import org.apache.storm.trident.state.StateFactory;
+import org.apache.storm.task.IMetricsContext;
 import clojure.lang.IFn;
 import clojure.lang.RT;
 

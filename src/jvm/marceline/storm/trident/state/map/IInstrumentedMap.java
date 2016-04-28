@@ -1,7 +1,7 @@
 package marceline.storm.trident.state.map;
 
-import backtype.storm.metric.api.CountMetric;
-import backtype.storm.metric.api.MultiCountMetric;
+import org.apache.storm.metric.api.CountMetric;
+import org.apache.storm.metric.api.MultiCountMetric;
 import java.util.List;
 
 public interface IInstrumentedMap<T> {

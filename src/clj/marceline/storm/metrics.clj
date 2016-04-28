@@ -1,7 +1,7 @@
 (ns marceline.storm.metrics
-  (:import [backtype.storm.metric.api IMetric CountMetric MultiCountMetric])
-  (:require [backtype.storm.clojure :refer (to-spec normalize-fns)]
-            [backtype.storm.config :refer (TOPOLOGY-METRICS-CONSUMER-REGISTER)])
+  (:import [org.apache.storm.metric.api IMetric CountMetric MultiCountMetric])
+  (:require [org.apache.storm.clojure :refer [to-spec normalize-fns]]
+            [org.apache.storm.config :refer [TOPOLOGY-METRICS-CONSUMER-REGISTER]])
   (:gen-class))
 
 (defn register-consumer
@@ -31,7 +31,7 @@
           init-state (:state opts {})]
       `(do
          (gen-class :name ~classname
-                    :implements [backtype.storm.metric.api.IMetricsConsumer]
+                    :implements [org.apache.storm.metric.api.IMetricsConsumer]
                     :prefix ~prefix
                     :state ~state
                     :init ~init)
