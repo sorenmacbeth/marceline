@@ -18,6 +18,7 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [Metrics](#metrics)
 * [Reading](#reading)
 * [Terminology](#terminology)
+* [Upgrading](#upgrading)
 * [Support](#support)
 * [License](#license)
 
@@ -36,7 +37,7 @@ Ready? Grab your willing vessel, and let's do this!
 Marceline is available from clojars. Add the following to your project's `deps`.
 
 ```
-[yieldbot/marceline "0.2.3-SNAPSHOT"]
+[yieldbot/marceline "0.3.0-SNAPSHOT"]
 ```
 
 Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.7.0`.
@@ -387,6 +388,13 @@ There have been several blog posts related to marceline. Please PR to add any po
 * **state**: Trident and Marceline provide support for reading and writing the result of processing to sources of state. The state can be internal to the topology (in memory), or stored externally in a database.
 * **DRPC**: DRPC stands for Distributed Remote Procedure Call. For more info, see [Distributed RPC](http://storm.apache.org/documentation/Distributed-RPC.html).
 
+
+<a name="upgrading">
+## Upgrading
+
+When upgrading existing topologies to `0.3.0-SNAPSHOT` version of
+Marceline, be aware that the top level namespace in storm has changed to
+`org.apache`, and that the `backtype` namespace has been deprecated.
 
 <a name="support">
 ## Support
