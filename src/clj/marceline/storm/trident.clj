@@ -337,7 +337,7 @@
 (defmacro instrumented-map [& body]
   (let [[base-fns other-fns] (split-with #(not (symbol? %)) body)
         fns (normalize-fns base-fns)]
-    `(reify org.apache.marceline.storm.trident.state.map.IInstrumentedMap
+    `(reify marceline.storm.trident.state.map.IInstrumentedMap
        ~@fns)))
 
 (defmacro definstrumentedmap [name & [opts & [get-impl put-impl] :as all]]
