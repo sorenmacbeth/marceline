@@ -37,7 +37,7 @@ Ready? Grab your willing vessel, and let's do this!
 Marceline is available from clojars. Add the following to your project's `deps`.
 
 ```
-[yieldbot/marceline "0.3.0-SNAPSHOT"]
+[yieldbot/marceline "0.3.1-SNAPSHOT"]
 ```
 
 Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.7.0`.
@@ -392,7 +392,7 @@ There have been several blog posts related to marceline. Please PR to add any po
 <a name="upgrading">
 ## Upgrading
 
-When upgrading existing topologies to `0.3.0-SNAPSHOT` version of
+When upgrading existing topologies to `0.3.1-SNAPSHOT` version of
 Marceline, be aware that the top level namespace in storm has changed to
 `org.apache`, and that the `backtype` namespace has been deprecated.
 
