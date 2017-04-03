@@ -23,6 +23,7 @@ Marceline is a Clojure DSL for [Trident](https://github.com/nathanmarz/storm/wik
 * [License](#license)
 
 <a name="overview">
+
 ## Overview
 
 Trident provides a layer of abstraction over [Storm](http://storm-project.net/) that allows for stateful stream processing and distributed querying.
@@ -32,6 +33,7 @@ Marceline provides a DSL that allows you to define all of the primitives that Tr
 Ready? Grab your willing vessel, and let's do this!
 
 <a name="installation">
+
 ## Installation
 
 Marceline is available from clojars. Add the following to your project's `deps`.
@@ -43,6 +45,7 @@ Marceline is available from clojars. Add the following to your project's `deps`.
 Note that marceline is pegged to versions of clojure which are compatible with Storm's clojure version; currently that is `1.7.0`.
 
 <a name="streams">
+
 ## Streams
 
 Trident topologies start with streams. A stream is an input source for the topology that emits batches of tuples for processing into the topology, by reading from a [spout](#terminology).
@@ -81,6 +84,7 @@ You can add this stream to your topology by calling that function along with Mar
 Once you've done that, new `sentence` tuples will be emitted into the topology.
 
 <a name="functions">
+
 ## Functions
 
 Trident functions accept tuples from streams or other functions as input, and emit new tuples into the topology after performing some processing on them:
@@ -114,16 +118,19 @@ Here, we add the `split-args` function we just defined for each `sentence` tuple
 ```
 
 <a name="project">
+
 ## Project
 
 `project` keeps only the [fields](#terminology) you specify from being emitted further into the topology. If your stream consists of the fields `args` and `word`, when you call `(t/project ["word"])` the output stream only contains the `word` field.
 
 <a name="grouping">
+
 ## Grouping and Partitioning Streams
 
 Marceline allows you to group and partition streams of tuples. In our `level-eight-evil-topology` we'll want to group this stream after splitting each word out into its own tuple, so we can perform aggregations on it later.
 
 <a name="group-by">
+
 ### Group by
 
 ```clojure
@@ -140,6 +147,7 @@ Marceline allows you to group and partition streams of tuples. In our `level-eig
 ```
 
 <a name="repartitioning-operations">
+
 ### Repartitioning Operations
 
 [Repartitoning operations](https://github.com/nathanmarz/storm/wiki/Trident-API-Overview#repartitioning-operations) that Marceline supports:
@@ -151,6 +159,7 @@ Marceline allows you to group and partition streams of tuples. In our `level-eig
 * `broadcast`: Every tuple is replicated to all target partitions.
 
 <a name="aggregations">
+
 ## Aggregations and State
 
 In our `level-eight-evil-topology`, we've split sentences into tuples, grouped them by word, and now we want to count them. Marceline provides `defcombineraggregator` for you to define an aggregation.
@@ -197,6 +206,7 @@ To store these word counts, we need to update a source of state. `persistent-agg
 In this example, we're using the `group-by ["word"]` to tell trident to update a `MapState` where the keys are words and the values are the counts of those words. You can write custom state updaters, state factories and query other sources of state using Marceline.
 
 <a name="drpc">
+
 ## DRPC Topologies
 
 Now that we're storing state, we need a way to query our topology. To do that, we're going to create a [DRPC](#terminology) stream in addition to our regular word-count topology. We want Marceline to return counts of words that we ask for, based on the words that have been processed by the `word-counts` topology, and stored in our `MemoryMapState`.
@@ -276,6 +286,7 @@ results
 **evil** is null because it doesn't appear in the the [fixed batch spout's array of values](#streams).  **vessel** and **ogdoad** do appear and thus they have a count. The specific count will likely be slightly different on every run.
 
 <a name="parallelism">
+
 ## Parallelism and Tuning
 
 Understanding parallelism in Trident can be tricky. If you're not familiar with the concept in Storm or Trident, I suggest you read [Understanding the parallelism of a Storm topology](https://github.com/nathanmarz/storm/wiki/Understanding-the-parallelism-of-a-Storm-topology) first, and then have a look at [Phillip Kromer's gist](https://gist.github.com/mrflip/5958028).
@@ -303,6 +314,7 @@ Marceline provides the `paralellism-hint` function, which allows you to set the 
 Here we're setting the `parallelism-hint` to 16, after we call `new-stream` our topology, telling Trident to create 16 [spouts](#terminology) for this stream.
 
 <a name="metrics">
+
 ## Metrics
 Storm provides an internal metrics system, which is used for reporting metrics in the Storm UI, but can also be used by topologies to report application metrics. For more information, see this [Endgame blog post](http://www.endgame.com/blog/storm-metrics-how-to.html) or the [Storm wiki page](https://github.com/nathanmarz/storm/wiki/Metrics). Note that marceline's metrics (like Storm's metrics) are meant for both trident as well as vanilla storm topologies. This documentation assumes a familiarity with Storm's metric system.
 
@@ -368,6 +380,7 @@ This macro binds the symbols, which will also be used as the `name` when registe
 Using `:count` or `:multi-count` specifies Storm's builtin `CountMetric` or `MultiCountMetric`, respectively. The value may also be a custom metric defined with `defmetric`, as above. The example `defmetric` is a re-implementation of `CountMetric`. The arguments to `defmetric` are simply an initial value and function to be used for updating the value.
 
 <a name="reading">
+
 ## Reading
 There have been several blog posts related to marceline. Please PR to add any posts that aren't already here!
 
@@ -377,6 +390,7 @@ There have been several blog posts related to marceline. Please PR to add any po
 
 
 <a name="terminology">
+
 ## Terminology
 
 * **spout**: A spout emits tuples into the topology, for more information see [Trident Spouts](http://storm.apache.org/documentation/Trident-spouts.html).
@@ -390,6 +404,7 @@ There have been several blog posts related to marceline. Please PR to add any po
 
 
 <a name="upgrading">
+
 ## Upgrading
 
 When upgrading existing topologies to `0.3.1-SNAPSHOT` version of
@@ -397,6 +412,7 @@ Marceline, be aware that the top level namespace in storm has changed to
 `org.apache`, and that the `backtype` namespace has been deprecated.
 
 <a name="support">
+
 ## Support
 
 YourKit
@@ -415,6 +431,7 @@ Profiler</a>, innovative and intelligent tools for profiling Java and
 .NET applications.
 
 <a name="license">
+
 ## License
 
 Copyright © 2014,2015 Yieldbot, Inc.
